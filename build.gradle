@@ -7,7 +7,17 @@ version '1.0-SNAPSHOT'
 
 project.ext.lwjglVersion = "3.2.2"
 project.ext.jomlVersion = "1.9.15"
-project.ext.lwjglNatives = "natives-macos"
+switch (OperatingSystem.current()) {
+    case OperatingSystem.LINUX:
+        project.ext.lwjglNatives = "natives-linux"
+        break
+    case OperatingSystem.MAC_OS:
+        project.ext.lwjglNatives = "natives-macos"
+        break
+    case OperatingSystem.WINDOWS:
+        project.ext.lwjglNatives = "natives-windows"
+        break
+}
 
 repositories {
     mavenCentral()
