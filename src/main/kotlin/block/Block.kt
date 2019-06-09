@@ -21,6 +21,10 @@ open class Block(private var _name: RegistryName) : IRegistryEntry {
         return this
     }
 
+    open fun isOpaque(): Boolean {
+        return true
+    }
+
     open fun shouldRenderFace(
         world: World,
         cX: Int,
@@ -34,10 +38,14 @@ open class Block(private var _name: RegistryName) : IRegistryEntry {
         var adj = face.getCovering(Triple(x+(16*cX),y+(16*rY),z+(16*cZ)))
         var other = world.getTileAt(adj.first, adj.second, adj.third)
         if(other != null) {
-            return !other.shouldRender()
+            return !other.shouldRender() || (!other.isOpaque() && this.isOpaque())
         }
         return true
     }
 
     open fun shouldRender(): Boolean = true
+
+    open fun renderLayer(): RenderType {
+        return RenderType.NORMAL
+    }
 }

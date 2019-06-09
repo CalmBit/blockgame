@@ -1,6 +1,7 @@
 package world
 
 import block.BlockRegistration
+import block.RenderType
 import block.TileState
 import gl.ShaderProgram
 import org.joml.Matrix4f
@@ -11,33 +12,37 @@ import render.ShapeHelper
 
 class Region(val rX: Int, val rY: Int, val rZ: Int) {
     private var _region: Array<TileState> = Array(16*16*16) { TileState(BlockRegistration.AIR) }
-    var vao: Int = 0
-    var vbo: Int = 0
-
-    var vertSize = 0
-
+    var vao: Array<Int> = Array(RenderType.values.size) {0}
+    var vbo: Array<Int> = Array(RenderType.values.size) {0}
+    var trans = Matrix4f()
+    var vertSize: Array<Int> = Array(RenderType.values.size) {0}
 
     init {
     }
 
     fun buildRenderData(world: World, cX: Int, cZ: Int, prog: ShaderProgram) {
-        var verts: MutableList<Float> = mutableListOf()
-        for(y in 0..15) {
-            for (z in 0..15) {
-                for (x in 0..15) {
-                    var t = getTileAt(x,y,z)
-                    if (!t!!.shouldRender()) continue
-                    ShapeHelper.appendVerts(world, cX, cZ, rY, x, y, z, t, verts)
+        for(l in RenderType.values) {
+            var verts: MutableList<Float> = mutableListOf()
+            for (y in 0..15) {
+                for (z in 0..15) {
+                    for (x in 0..15) {
+                        var t = getTileAt(x, y, z)
+                        if (!t!!.shouldRender() || t.renderLayer() != l) continue
+                        ShapeHelper.appendVerts(world, cX, cZ, rY, x, y, z, t, verts)
+                    }
                 }
             }
+            vertSize[l.ordinal] = verts.size
+            vao[l.ordinal] = glGenVertexArrays()
+            glBindVertexArray(vao[l.ordinal])
+            vbo[l.ordinal] = glGenBuffers()
+            glBindBuffer(GL_ARRAY_BUFFER, vbo[l.ordinal])
+            glBufferData(GL_ARRAY_BUFFER, verts.toFloatArray(), GL_STATIC_DRAW)
+            setupAttribs(vao[l.ordinal], vbo[l.ordinal], prog)
         }
-        vertSize = verts.size
-        vao = glGenVertexArrays()
-        glBindVertexArray(vao)
-        vbo = glGenBuffers()
-        glBindBuffer(GL_ARRAY_BUFFER, vbo)
-        glBufferData(GL_ARRAY_BUFFER, verts.toFloatArray(), GL_STATIC_DRAW)
-        setupAttribs(prog)
+
+        trans = Matrix4f()
+            .translate(rX*16.0f, rY*16.0f, rZ * 16.0f)
     }
 
 
@@ -46,25 +51,23 @@ class Region(val rX: Int, val rY: Int, val rZ: Int) {
         _region[(y*(16*16))+(z*16)+x] = tile
     }
 
-    fun draw(uniTrans: Int, timer: Float) {
+    fun draw(l: RenderType, uniTrans: Int, timer: Float) {
         var stack: MemoryStack? = null
         try {
             stack = MemoryStack.stackPush()
-            glBindVertexArray(vao)
-            val trans = Matrix4f()
-                .translate(rX*16.0f, rY*16.0f, rZ * 16.0f)
-                //.rotate(timer*Math.toRadians(90.0).toFloat(), 0.0f, 1.0f, 0.0f)
-                .get(stack.mallocFloat(16))
-            glUniformMatrix4fv(uniTrans, false, trans)
-            glDrawArrays(GL_TRIANGLES, 0, vertSize/8)
+            glBindVertexArray(vao[l.ordinal])
+            glUniformMatrix4fv(uniTrans, false, trans.get(stack.mallocFloat(16)))
+            glDrawArrays(GL_TRIANGLES, 0, vertSize[l.ordinal] / 8)
         } finally {
             stack?.pop()
         }
     }
 
-    fun setupAttribs(prog: ShaderProgram) {
+    fun setupAttribs(vao: Int, vbo: Int, prog: ShaderProgram) {
         glBindVertexArray(vao)
         glBindBuffer(GL_ARRAY_BUFFER, vbo)
+
+        prog.use()
 
         var posAttrib = glGetAttribLocation(prog.program, "position")
         glEnableVertexAttribArray(posAttrib)

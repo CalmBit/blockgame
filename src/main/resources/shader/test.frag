@@ -13,5 +13,7 @@ void main()
 {
     float fogAmount = smoothstep(32.0, 50.0, fogDepth);
     vec4 color = texture(tex, Texcoord) * vec4(Color, 1.0);
-    outColor = mix(color, vec4(0.529f, 0.808f, 0.980f, 1.0f), fogAmount);
+    if(color.a < 0.1)
+        discard;
+    outColor = color; //mix(color, vec4(0.529f, 0.808f, 0.980f, 1.0f), fogAmount);
 }
