@@ -5,6 +5,7 @@ import block.RenderType
 import block.TileState
 import gl.ShaderProgram
 import org.joml.Matrix4f
+import org.lwjgl.opengl.GL15
 import org.lwjgl.opengl.GL31.*
 import org.lwjgl.system.MemoryStack
 import render.ShapeHelper
@@ -56,6 +57,7 @@ class Region(val rX: Int, val rY: Int, val rZ: Int) {
         try {
             stack = MemoryStack.stackPush()
             glBindVertexArray(vao[l.ordinal])
+            glBindBuffer(GL_ARRAY_BUFFER, vbo[l.ordinal])
             glUniformMatrix4fv(uniTrans, false, trans.get(stack.mallocFloat(16)))
             glDrawArrays(GL_TRIANGLES, 0, vertSize[l.ordinal] / 8)
         } finally {

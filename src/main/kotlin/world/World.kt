@@ -12,8 +12,8 @@ class World {
     var random = Random(_seed)
 
     init {
-        for(x in 0..24) {
-            for(z in 0..24) {
+        for(x in 0..16) {
+            for(z in 0..16) {
                 addChunk(Pair(x,z))
             }
         }

@@ -10,6 +10,8 @@ import org.lwjgl.opengl.GL31.*
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryUtil.NULL
 import render.FontRenderer
+import render.GuiRenderer
+import render.PlaneRenderer
 import world.World
 import java.text.DecimalFormat
 import java.time.Duration
@@ -20,17 +22,20 @@ class Window {
     var uniTrans = 0
     var uniView = 0
     var uniProj = 0
-    var textProj = 0
     var timer = 0.0f
     var frames = 0
     var fps = 0
+    var renderDistance = 128.0f
     var lastFs: Instant = Instant.EPOCH
     var tex: Texture? = null
     var tex2: Texture? = null
     var ctex: Texture? = null
     var world: World? = null
     var prog: ShaderProgram? = null
-    var textProg: ShaderProgram? = null
+    var wWidth = 800.0f
+    var wHeight = 600.0f
+
+    var focused = true
 
     var mlastX = 400.0
     var mlastY = 300.0
@@ -76,7 +81,13 @@ class Window {
 
         glfwSetKeyCallback(_window) { window: Long, key: Int, scancode: Int, action: Int, mods: Int ->
             if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE)
-                glfwSetWindowShouldClose(window, true)
+                if(!focused)
+                    glfwSetWindowShouldClose(window, true)
+                else {
+                    focused = false
+                    glfwSetInputMode(_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL)
+                }
+
             else {
                 keyStates[key] = (action != GLFW_RELEASE)
             }
@@ -84,30 +95,44 @@ class Window {
 
         glfwSetInputMode(_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED)
 
+        glfwSetMouseButtonCallback(_window) {window: Long, button: Int, action: Int, mods: Int ->
+            if(!focused && button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
+                focused = true
+                glfwSetInputMode(_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED)
+            }
+        }
+
         glfwSetCursorPosCallback(_window) {window :Long, xPos: Double, yPos: Double ->
-            var xOffset = xPos - mlastX
-            var yOffset = yPos - mlastY
-            mlastX = xPos
-            mlastY = yPos
+            if(focused) {
+                var xOffset = xPos - mlastX
+                var yOffset = yPos - mlastY
+                mlastX = xPos
+                mlastY = yPos
 
-            val sensitivity = 0.05
-            xOffset *= sensitivity
-            yOffset *= sensitivity
+                val sensitivity = 0.05
+                xOffset *= sensitivity
+                yOffset *= sensitivity
 
-            yaw   += xOffset
-            pitch -= yOffset
+                yaw += xOffset
+                pitch -= yOffset
 
-            if(pitch > 89.0)
-                pitch =  89.0
-            if(pitch < -89.0)
-                pitch = -89.0
+                if (pitch > 89.0)
+                    pitch = 89.0
+                if (pitch < -89.0)
+                    pitch = -89.0
 
-            var f = Vector3f()
+                var f = Vector3f()
 
-            f.x = (Math.cos(Math.toRadians(pitch)) * Math.cos(Math.toRadians(yaw))).toFloat()
-            f.y = (Math.sin(Math.toRadians(pitch))).toFloat()
-            f.z = (Math.cos(Math.toRadians(pitch)) * Math.sin(Math.toRadians(yaw))).toFloat()
-            front = f.normalize()
+                f.x = (Math.cos(Math.toRadians(pitch)) * Math.cos(Math.toRadians(yaw))).toFloat()
+                f.y = (Math.sin(Math.toRadians(pitch))).toFloat()
+                f.z = (Math.cos(Math.toRadians(pitch)) * Math.sin(Math.toRadians(yaw))).toFloat()
+                front = f.normalize()
+            }
+        }
+
+        glfwSetWindowSizeCallback(_window) {window: Long, width: Int, height: Int ->
+            wWidth = width.toFloat()
+            wHeight = height.toFloat()
         }
 
 
@@ -159,15 +184,7 @@ class Window {
         a = Instant.now()
         Logger.logger.info("VBO: ${Duration.between(f, a)}")
 
-        var textVert= VertexShader("shader/text.vert")
-        var textFrag = FragmentShader("shader/text.frag")
-        textProg = ShaderProgram(textVert, textFrag)
 
-        textProg!!.use()
-
-        textProj = glGetUniformLocation(textProg!!.program, "proj")
-
-        FontRenderer.buildAttribs(textProg!!)
     }
 
     private fun loop() {
@@ -183,12 +200,18 @@ class Window {
 
             timer += 0.01f
 
-            if(keyStates[GLFW_KEY_W]) pos.add(Vector3f(front.x * 0.5f, front.y * 0.5f, front.z * 0.5f))
-            if(keyStates[GLFW_KEY_S]) pos.sub(Vector3f(front.x * 0.5f, front.y * 0.5f, front.z * 0.5f))
-            if(keyStates[GLFW_KEY_A]) pos.sub(Vector3f(front.x, front.y, front.z)
-                .cross(Vector3f(0.0f, 1.0f, 0.0f).div(2.0f)))
-            if(keyStates[GLFW_KEY_D]) pos.add(Vector3f(front.x, front.y, front.z)
-                .cross(Vector3f(0.0f, 1.0f, 0.0f).div(2.0f)))
+            if(focused) {
+                if (keyStates[GLFW_KEY_W]) pos.add(Vector3f(front.x * 0.5f, front.y * 0.5f, front.z * 0.5f))
+                if (keyStates[GLFW_KEY_S]) pos.sub(Vector3f(front.x * 0.5f, front.y * 0.5f, front.z * 0.5f))
+                if (keyStates[GLFW_KEY_A]) pos.sub(
+                    Vector3f(front.x, front.y, front.z)
+                        .cross(Vector3f(0.0f, 1.0f, 0.0f).div(2.0f))
+                )
+                if (keyStates[GLFW_KEY_D]) pos.add(
+                    Vector3f(front.x, front.y, front.z)
+                        .cross(Vector3f(0.0f, 1.0f, 0.0f).div(2.0f))
+                )
+            }
 
             if(keyStates[GLFW_KEY_R]) {
                 tex2!!.use()
@@ -196,22 +219,27 @@ class Window {
                 tex!!.use()
             }
 
-            FontRenderer.renderText(4.0f, 0.0f, "BlockGame v.06092019 (FPS: $fps)\nPosition: ${pos.toString(DecimalFormat("0.000"))}", 1.5f)
-            FontRenderer.renderText(4.0f, 600.0f-(FontRenderer.font.height*1.5f), "BETA VERSION (donut steel)", 1.5f)
+            FontRenderer.renderWithShadow(4.0f, 0.0f, "BlockGame v.06092019 (FPS: $fps)\nPosition: ${pos.toString(DecimalFormat("0.000"))}", 1.5f)
+            FontRenderer.renderWithShadow(4.0f, wHeight-(FontRenderer.font.height*1.5f), "BETA VERSION (donut steel)", 1.5f)
+
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+
+            view = Matrix4f()
+                .lookAt(
+                    pos,
+                    Vector3f(pos.x + front.x, pos.y + front.y, pos.z + front.z),
+                    Vector3f(0.0f,1.0f,0.0f))
+            proj = Matrix4f()
+                .perspective(Math.toRadians(90.0).toFloat(),800.0f/600.0f,1.0f,renderDistance)
+
+            PlaneRenderer.draw(view, proj ,pos, pitch, yaw)
 
             prog!!.use()
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+
             var stack: MemoryStack? = null
             try {
                 stack = MemoryStack.stackPush()
-                view = Matrix4f()
-                    .lookAt(
-                        pos,
-                        Vector3f(pos.x + front.x, pos.y + front.y, pos.z + front.z),
-                    Vector3f(0.0f,1.0f,0.0f))
                 glUniformMatrix4fv(uniView, false, view.get(stack.mallocFloat(16)))
-                proj = Matrix4f()
-                    .perspective(Math.toRadians(90.0).toFloat(),800.0f/600.0f,1.0f,100.0f)
                 glUniformMatrix4fv(uniProj, false, proj.get(stack.mallocFloat(16)))
             } finally {
                 stack?.pop()
@@ -219,18 +247,14 @@ class Window {
 
             world!!.draw(uniTrans, timer)
 
-            textProg!!.use()
+            proj = Matrix4f()
+                .ortho(0.0f, wWidth, wHeight, 0.0f, -1.0f, 10.0f)
 
-            stack = null
-            try {
-                stack = MemoryStack.stackPush()
-                proj = Matrix4f()
-                    .ortho(0.0f, 800.0f, 600.0f, 0.0f, 0.0f, 10.0f)
-                glUniformMatrix4fv(textProj, false, proj.get(stack.mallocFloat(16)))
-            } finally {
-                stack?.pop()
+            FontRenderer.draw(proj)
+
+            if(!focused) {
+                GuiRenderer.renderDoverlay()
             }
-            FontRenderer.draw()
 
             frames++
             if(Duration.between(lastFs, Instant.now()).seconds >= 1) {

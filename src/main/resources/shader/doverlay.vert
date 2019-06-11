@@ -1,16 +1,13 @@
 #version 150 core
 
 in vec2 position;
-in vec3 color;
-in vec2 texcoord;
+in vec4 color;
 
-out vec3 Color;
-out vec2 Texcoord;
+out vec4 Color;
 
 uniform mat4 proj;
 
 void main() {
     Color = color;
-    Texcoord = texcoord;
     gl_Position = proj * vec4(position, 0.0, 1.0);
 }
