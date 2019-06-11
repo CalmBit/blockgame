@@ -1,5 +1,6 @@
 package block
 
+import gl.UVPair
 import registry.RegistryName
 
 class BlockLog(_name: RegistryName) : Block(_name) {

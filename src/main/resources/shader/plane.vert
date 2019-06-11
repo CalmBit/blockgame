@@ -1,7 +1,6 @@
 #version 150 core
 
 in vec3 position;
-in vec3 color;
 
 out vec3 Color;
 out float fogDepth;
@@ -10,6 +9,7 @@ out float fogDepth;
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 proj;
+uniform vec3 color;
 
 
 void main()

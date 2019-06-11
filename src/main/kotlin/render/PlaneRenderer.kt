@@ -21,17 +21,19 @@ object PlaneRenderer {
     var planeTrans: Int
     var planeView: Int
     var planeProj: Int
+    var planeColor: Int
 
     val SKY_PLANE: Vector3f = Vector3f(0.000f, 0.749f, 1.000f)
     val VOID_PLANE: Vector3f = Vector3f(0.118f, 0.565f, 1.000f)
+    val DARK_PLANE: Vector3f = Vector3f()
 
     init {
         vao = glGenVertexArrays()
         glBindVertexArray(vao)
         vbo = glGenBuffers()
         glBindBuffer(GL_ARRAY_BUFFER, vbo)
-        renderPlane(16.0f, SKY_PLANE)
-        renderPlane(-16.0f, VOID_PLANE)
+        renderPlane(16.0f)
+        renderPlane(-16.0f)
 
         var planeVert= VertexShader("shader/plane.vert")
         var planeFrag = FragmentShader("shader/plane.frag")
@@ -42,60 +44,39 @@ object PlaneRenderer {
         planeTrans = glGetUniformLocation(planeShader.program, "model")
         planeView = glGetUniformLocation(planeShader.program, "view")
         planeProj = glGetUniformLocation(planeShader.program, "proj")
+        planeColor = glGetUniformLocation(planeShader.program, "color")
 
         var posAttrib = glGetAttribLocation(planeShader.program, "position")
         glEnableVertexAttribArray(posAttrib)
-        glVertexAttribPointer(posAttrib, 3, GL_FLOAT, false, 6*4, 0L)
-
-        var colAttrib = glGetAttribLocation(planeShader.program, "color")
-        glEnableVertexAttribArray(colAttrib)
-        glVertexAttribPointer(colAttrib, 3, GL_FLOAT, false, 6*4, 3*4L)
+        glVertexAttribPointer(posAttrib, 3, GL_FLOAT, false, 3*4, 0L)
     }
 
-    fun renderPlane(y: Float, color: Vector3f) {
+    fun renderPlane(y: Float) {
         verts.add(-size)
         verts.add(y)
         verts.add(-size)
-        verts.add(color.x)
-        verts.add(color.y)
-        verts.add(color.z)
 
         verts.add(if(y < 0) -size else size)
         verts.add(y)
         verts.add(if(y < 0) size else -size)
-        verts.add(color.x)
-        verts.add(color.y)
-        verts.add(color.z)
 
         verts.add(size)
         verts.add(y)
         verts.add(size)
-        verts.add(color.x)
-        verts.add(color.y)
-        verts.add(color.z)
 
         verts.add(size)
         verts.add(y)
         verts.add(size)
-        verts.add(color.x)
-        verts.add(color.y)
-        verts.add(color.z)
 
         verts.add(if(y < 0) size else -size)
         verts.add(y)
         verts.add(if(y < 0) -size else size)
-        verts.add(color.x)
-        verts.add(color.y)
-        verts.add(color.z)
 
         verts.add(-size)
         verts.add(y)
         verts.add(-size)
-        verts.add(color.x)
-        verts.add(color.y)
-        verts.add(color.z)
 
-        quads = verts.size / 6
+        quads = verts.size / 3
 
         glBufferData(GL_ARRAY_BUFFER, verts.toFloatArray(), GL_DYNAMIC_DRAW)
     }
@@ -115,7 +96,15 @@ object PlaneRenderer {
                 .get(stack.mallocFloat(16)))
             glUniformMatrix4fv(planeView, false, view.get(stack.mallocFloat(16)))
             glUniformMatrix4fv(planeProj, false, proj.get(stack.mallocFloat(16)))
-            glDrawArrays(GL_TRIANGLES, 0, quads)
+            glUniform3fv(planeColor, SKY_PLANE.get(stack.mallocFloat(3)))
+            glDrawArrays(GL_TRIANGLES, 0, quads/2)
+            if(pos.y < 62) {
+                glUniform3fv(planeColor, DARK_PLANE.get(stack.mallocFloat(3)))
+            } else {
+                glUniform3fv(planeColor, VOID_PLANE.get(stack.mallocFloat(3)))
+            }
+            glDrawArrays(GL_TRIANGLES, quads/2, quads)
+
         } finally {
             stack?.pop()
         }

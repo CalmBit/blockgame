@@ -1,5 +1,7 @@
 package block
 
+import gl.UVPair
+
 class TileState(var block: Block) {
     fun getUVForFace(face: EnumDirection): UVPair = block.getUVForFace(face)
     fun shouldRender(): Boolean = block.shouldRender()

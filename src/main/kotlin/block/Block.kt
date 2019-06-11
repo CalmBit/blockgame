@@ -1,5 +1,6 @@
 package block
 
+import gl.UVPair
 import registry.IRegistryEntry
 import registry.RegistryName
 import world.World
