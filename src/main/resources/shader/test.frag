@@ -11,7 +11,7 @@ uniform sampler2D tex;
 
 void main()
 {
-    float fogAmount = smoothstep(96.0, 128.0, fogDepth);
+    float fogAmount = smoothstep(102.4, 128.0, fogDepth);
     vec4 color = texture(tex, Texcoord) * vec4(Color, 1.0);
     if(color.a < 0.1)
         discard;

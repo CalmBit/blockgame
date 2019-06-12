@@ -1,4 +1,5 @@
 import gl.*
+import kotlinx.coroutines.runBlocking
 import org.joml.Math
 import org.joml.Matrix4f
 import org.joml.Vector3f
@@ -34,6 +35,7 @@ class Window {
     var prog: ShaderProgram? = null
     var wWidth = 800.0f
     var wHeight = 600.0f
+    var texUse = true
 
     var focused = true
 
@@ -55,7 +57,9 @@ class Window {
         Logger.logger.debug("[RUN]")
 
         init()
-        loop()
+        runBlocking {
+            loop()
+        }
 
         glfwFreeCallbacks(_window)
         glfwSetErrorCallback(null)?.free()
@@ -87,7 +91,9 @@ class Window {
                     focused = false
                     glfwSetInputMode(_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL)
                 }
-
+            else if(key == GLFW_KEY_R && action == GLFW_RELEASE) {
+                texUse = !texUse
+            }
             else {
                 keyStates[key] = (action != GLFW_RELEASE)
             }
@@ -175,19 +181,10 @@ class Window {
         uniView = glGetUniformLocation(prog!!.program, "view")
         uniProj = glGetUniformLocation(prog!!.program, "proj")
 
-        var f = Instant.now()
-        world = World()
-        var a = Instant.now()
-        Logger.logger.info("Gen: ${Duration.between(f, a)}")
-        f = Instant.now()
-        world!!.rebuildAllChunks(prog!!)
-        a = Instant.now()
-        Logger.logger.info("VBO: ${Duration.between(f, a)}")
-
-
+        world = World(_window, prog!!)
     }
 
-    private fun loop() {
+    private suspend fun loop() {
 
         if(lastFs == Instant.EPOCH) {
             lastFs = Instant.now()
@@ -213,14 +210,18 @@ class Window {
                 )
             }
 
-            if(keyStates[GLFW_KEY_R]) {
+            if(!texUse) {
                 tex2!!.use()
             } else {
                 tex!!.use()
             }
 
-            FontRenderer.renderWithShadow(4.0f, 0.0f, "BlockGame v.06092019 (FPS: $fps)\nPosition: ${pos.toString(DecimalFormat("0.000"))}", 1.5f)
+            FontRenderer.renderWithShadow(4.0f, 0.0f, "BlockGame v.06122019 (FPS: $fps)\nPosition: ${pos.toString(DecimalFormat("0.000"))}", 1.5f)
             FontRenderer.renderWithShadow(4.0f, wHeight-(FontRenderer.font.height*1.5f), "BETA VERSION (donut steel)", 1.5f)
+            if(world!!.renderChunkQueue.size > 0) {
+                FontRenderer.renderWithShadow(4.0f, FontRenderer.font.height * 3.0f + 1.5f, "Rendering Chunks: ${world!!.renderChunkQueue.size}", 1.5f)
+                FontRenderer.renderWithShadow(4.0f, FontRenderer.font.height * 4.5f + 1.5f, "Binding Chunks: ${world!!.bindChunkQueue.size}", 1.5f)
+            }
 
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
@@ -254,6 +255,22 @@ class Window {
 
             if(!focused) {
                 GuiRenderer.renderDoverlay()
+            }
+
+            fun bindChunk(batch: world.BindChunkBatch) {
+                batch.first.bindRenderData(batch.second, batch.third, prog!!)
+            }
+
+            if(world!!.bindChunkQueue.size > 0) {
+                if(world!!.bindChunkQueue.size < 24) {
+                    while(world!!.bindChunkQueue.size > 0) {
+                        bindChunk(world!!.bindChunkQueue.remove())
+                    }
+                } else {
+                    for(i in 0 until 24) {
+                        bindChunk(world!!.bindChunkQueue.remove())
+                    }
+                }
             }
 
             frames++

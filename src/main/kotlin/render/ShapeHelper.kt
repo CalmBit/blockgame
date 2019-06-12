@@ -31,12 +31,12 @@ object ShapeHelper {
         if(tileState.block.shouldRenderFace(world, cX, cZ, rY, x, y, z, EnumDirection.SOUTH)) {
             // South
             var sV = floatArrayOf(
-            vX,       vY,       vZ,       1.0f, 1.0f, 1.0f, (u*uvSize)+uvSize- offset, (v*uvSize)+uvSize- offset,
-            vX,       vY+1.0f,  vZ,       1.0f, 1.0f, 1.0f, (u*uvSize)+uvSize- offset, (v*uvSize) + offset,
-            vX+1.0f,  vY+1.0f,  vZ,       1.0f, 1.0f, 1.0f, (u*uvSize) + offset, (v*uvSize) + offset,
-            vX+1.0f,  vY+1.0f,  vZ,       1.0f, 1.0f, 1.0f, (u*uvSize) + offset, (v*uvSize) + offset,
-            vX+1.0f,  vY,       vZ,       1.0f, 1.0f, 1.0f, (u*uvSize) + offset, (v*uvSize)+uvSize - offset,
-            vX,       vY,       vZ,       1.0f, 1.0f, 1.0f, (u*uvSize)+uvSize - offset, (v*uvSize)+uvSize - offset)
+            vX,       vY,       vZ,       0.6f, 0.6f, 0.6f, (u*uvSize)+uvSize- offset, (v*uvSize)+uvSize- offset,
+            vX,       vY+1.0f,  vZ,       0.6f, 0.6f, 0.6f, (u*uvSize)+uvSize- offset, (v*uvSize) + offset,
+            vX+1.0f,  vY+1.0f,  vZ,       0.6f, 0.6f, 0.6f, (u*uvSize) + offset, (v*uvSize) + offset,
+            vX+1.0f,  vY+1.0f,  vZ,       0.6f, 0.6f, 0.6f, (u*uvSize) + offset, (v*uvSize) + offset,
+            vX+1.0f,  vY,       vZ,       0.6f, 0.6f, 0.6f, (u*uvSize) + offset, (v*uvSize)+uvSize - offset,
+            vX,       vY,       vZ,       0.6f, 0.6f, 0.6f, (u*uvSize)+uvSize - offset, (v*uvSize)+uvSize - offset)
             for(v in sV) {
                 verts.add(v)
             }
@@ -45,12 +45,12 @@ object ShapeHelper {
         if(tileState.block.shouldRenderFace(world, cX, cZ, rY, x, y, z, EnumDirection.NORTH)) {
             // North
             var nV = floatArrayOf(
-            vX,       vY,       vZ+1.0f,  1.0f, 1.0f, 1.0f, (u*uvSize) + offset, (v*uvSize)+uvSize,
-            vX+1.0f,  vY,       vZ+1.0f,  1.0f, 1.0f, 1.0f, (u*uvSize)+uvSize- offset, (v*uvSize)+uvSize- offset,
-            vX+1.0f,  vY+1.0f,  vZ+1.0f,  1.0f, 1.0f, 1.0f, (u*uvSize)+uvSize- offset, (v*uvSize)- offset,
-            vX+1.0f,  vY+1.0f,  vZ+1.0f,  1.0f, 1.0f, 1.0f, (u*uvSize)+uvSize- offset, (v*uvSize)+ offset,
-            vX,       vY+1.0f,  vZ+1.0f,  1.0f, 1.0f, 1.0f, (u*uvSize)+ offset, (v*uvSize)+ offset,
-            vX,       vY,       vZ+1.0f,  1.0f, 1.0f, 1.0f, (u*uvSize)+ offset, (v*uvSize)+uvSize- offset)
+            vX,       vY,       vZ+1.0f,  0.6f, 0.6f, 0.6f, (u*uvSize) + offset, (v*uvSize)+uvSize,
+            vX+1.0f,  vY,       vZ+1.0f,  0.6f, 0.6f, 0.6f, (u*uvSize)+uvSize- offset, (v*uvSize)+uvSize- offset,
+            vX+1.0f,  vY+1.0f,  vZ+1.0f,  0.6f, 0.6f, 0.6f, (u*uvSize)+uvSize- offset, (v*uvSize)- offset,
+            vX+1.0f,  vY+1.0f,  vZ+1.0f,  0.6f, 0.6f, 0.6f, (u*uvSize)+uvSize- offset, (v*uvSize)+ offset,
+            vX,       vY+1.0f,  vZ+1.0f,  0.6f, 0.6f, 0.6f, (u*uvSize)+ offset, (v*uvSize)+ offset,
+            vX,       vY,       vZ+1.0f,  0.6f, 0.6f, 0.6f, (u*uvSize)+ offset, (v*uvSize)+uvSize- offset)
             for(v in nV) {
                 verts.add(v)
             }
@@ -59,12 +59,12 @@ object ShapeHelper {
         if(tileState.block.shouldRenderFace(world, cX, cZ, rY, x, y, z, EnumDirection.EAST)) {
             // East
             var eV = floatArrayOf(
-            vX,       vY+1.0f,  vZ+1.0f,  1.0f, 1.0f, 1.0f, (u*uvSize)+uvSize- offset, (v*uvSize)+ offset,
-            vX,       vY+1.0f,  vZ,       1.0f, 1.0f, 1.0f, (u*uvSize)+ offset, (v*uvSize+ offset),
-            vX,       vY,       vZ,       1.0f, 1.0f, 1.0f, (u*uvSize)+ offset, (v*uvSize)+uvSize- offset,
-            vX,       vY,       vZ,       1.0f, 1.0f, 1.0f, (u*uvSize)+ offset, (v*uvSize)+uvSize- offset,
-            vX,       vY,       vZ+1.0f,  1.0f, 1.0f, 1.0f, (u*uvSize)+uvSize- offset, (v*uvSize)+uvSize- offset,
-            vX,       vY+1.0f,  vZ+1.0f,  1.0f, 1.0f, 1.0f, (u*uvSize)+uvSize- offset, (v*uvSize)+ offset)
+            vX,       vY+1.0f,  vZ+1.0f,  0.8f, 0.8f, 0.8f, (u*uvSize)+uvSize- offset, (v*uvSize)+ offset,
+            vX,       vY+1.0f,  vZ,       0.8f, 0.8f, 0.8f, (u*uvSize)+ offset, (v*uvSize+ offset),
+            vX,       vY,       vZ,       0.8f, 0.8f, 0.8f, (u*uvSize)+ offset, (v*uvSize)+uvSize- offset,
+            vX,       vY,       vZ,       0.8f, 0.8f, 0.8f, (u*uvSize)+ offset, (v*uvSize)+uvSize- offset,
+            vX,       vY,       vZ+1.0f,  0.8f, 0.8f, 0.8f, (u*uvSize)+uvSize- offset, (v*uvSize)+uvSize- offset,
+            vX,       vY+1.0f,  vZ+1.0f,  0.8f, 0.8f, 0.8f, (u*uvSize)+uvSize- offset, (v*uvSize)+ offset)
             for(v in eV) {
                 verts.add(v)
             }
@@ -73,12 +73,12 @@ object ShapeHelper {
         if(tileState.block.shouldRenderFace(world, cX, cZ, rY, x, y, z, EnumDirection.WEST)) {
             // West
             var wV = floatArrayOf(
-            vX+1.0f,  vY+1.0f,  vZ+1.0f,  1.0f, 1.0f, 1.0f, (u*uvSize)+ offset, (v*uvSize)+ offset,
-            vX+1.0f,  vY,       vZ+1.0f,  1.0f, 1.0f, 1.0f, (u*uvSize)+ offset, (v*uvSize)+uvSize- offset,
-            vX+1.0f,  vY,       vZ,       1.0f, 1.0f, 1.0f, (u*uvSize)+uvSize- offset, (v*uvSize)+uvSize- offset,
-            vX+1.0f,  vY,       vZ,       1.0f, 1.0f, 1.0f, (u*uvSize)+uvSize- offset, (v*uvSize)+uvSize- offset,
-            vX+1.0f,  vY+1.0f,  vZ,       1.0f, 1.0f, 1.0f, (u*uvSize)+uvSize- offset, (v*uvSize)+ offset,
-            vX+1.0f,  vY+1.0f,  vZ+1.0f,  1.0f, 1.0f, 1.0f, (u*uvSize)+ offset, (v*uvSize)+ offset)
+            vX+1.0f,  vY+1.0f,  vZ+1.0f,  0.8f, 0.8f, 0.8f, (u*uvSize)+ offset, (v*uvSize)+ offset,
+            vX+1.0f,  vY,       vZ+1.0f,  0.8f, 0.8f, 0.8f, (u*uvSize)+ offset, (v*uvSize)+uvSize- offset,
+            vX+1.0f,  vY,       vZ,       0.8f, 0.8f, 0.8f, (u*uvSize)+uvSize- offset, (v*uvSize)+uvSize- offset,
+            vX+1.0f,  vY,       vZ,       0.8f, 0.8f, 0.8f, (u*uvSize)+uvSize- offset, (v*uvSize)+uvSize- offset,
+            vX+1.0f,  vY+1.0f,  vZ,       0.8f, 0.8f, 0.8f, (u*uvSize)+uvSize- offset, (v*uvSize)+ offset,
+            vX+1.0f,  vY+1.0f,  vZ+1.0f,  0.8f, 0.8f, 0.8f, (u*uvSize)+ offset, (v*uvSize)+ offset)
             for(v in wV) {
                 verts.add(v)
             }
@@ -87,12 +87,12 @@ object ShapeHelper {
         if(tileState.block.shouldRenderFace(world, cX, cZ, rY, x, y, z, EnumDirection.DOWN)) {
             // Bottom
             var bV = floatArrayOf(
-            vX,       vY,       vZ,       1.0f, 1.0f, 1.0f, (bu*uvSize)+uvSize- offset, (bv*uvSize)+uvSize- offset,
-            vX+1.0f,  vY,       vZ,       1.0f, 1.0f, 1.0f, (bu*uvSize)+uvSize- offset, (bv*uvSize)+ offset,
-            vX+1.0f,  vY,       vZ+1.0f,  1.0f, 1.0f, 1.0f, (bu*uvSize)+ offset, (bv*uvSize)+ offset,
-            vX+1.0f,  vY,       vZ+1.0f,  1.0f, 1.0f, 1.0f, (bu*uvSize)+ offset, (bv*uvSize)+ offset,
-            vX,       vY,       vZ+1.0f,  1.0f, 1.0f, 1.0f, (bu*uvSize)+ offset, (bv*uvSize)+uvSize- offset,
-            vX,       vY,       vZ,       1.0f, 1.0f, 1.0f, (bu*uvSize)+uvSize- offset, (bv*uvSize)+uvSize- offset)
+            vX,       vY,       vZ,       0.5f, 0.5f, 0.5f, (bu*uvSize)+uvSize- offset, (bv*uvSize)+uvSize- offset,
+            vX+1.0f,  vY,       vZ,       0.5f, 0.5f, 0.5f, (bu*uvSize)+uvSize- offset, (bv*uvSize)+ offset,
+            vX+1.0f,  vY,       vZ+1.0f,  0.5f, 0.5f, 0.5f, (bu*uvSize)+ offset, (bv*uvSize)+ offset,
+            vX+1.0f,  vY,       vZ+1.0f,  0.5f, 0.5f, 0.5f, (bu*uvSize)+ offset, (bv*uvSize)+ offset,
+            vX,       vY,       vZ+1.0f,  0.5f, 0.5f, 0.5f, (bu*uvSize)+ offset, (bv*uvSize)+uvSize- offset,
+            vX,       vY,       vZ,       0.5f, 0.5f, 0.5f, (bu*uvSize)+uvSize- offset, (bv*uvSize)+uvSize- offset)
             for(v in bV) {
                 verts.add(v)
             }

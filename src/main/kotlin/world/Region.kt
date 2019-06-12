@@ -19,31 +19,37 @@ class Region(val rX: Int, val rY: Int, val rZ: Int) {
     var vertSize: Array<Int> = Array(RenderType.values.size) {0}
 
     init {
-    }
-
-    fun buildRenderData(world: World, cX: Int, cZ: Int, prog: ShaderProgram) {
         for(l in RenderType.values) {
-            var verts: MutableList<Float> = mutableListOf()
-            for (y in 0..15) {
-                for (z in 0..15) {
-                    for (x in 0..15) {
-                        var t = getTileAt(x, y, z)
-                        if (!t!!.shouldRender() || t.renderLayer() != l) continue
-                        ShapeHelper.appendVerts(world, cX, cZ, rY, x, y, z, t, verts)
-                    }
-                }
-            }
-            vertSize[l.ordinal] = verts.size
             vao[l.ordinal] = glGenVertexArrays()
             glBindVertexArray(vao[l.ordinal])
             vbo[l.ordinal] = glGenBuffers()
             glBindBuffer(GL_ARRAY_BUFFER, vbo[l.ordinal])
-            glBufferData(GL_ARRAY_BUFFER, verts.toFloatArray(), GL_STATIC_DRAW)
-            setupAttribs(vao[l.ordinal], vbo[l.ordinal], prog)
         }
 
         trans = Matrix4f()
             .translate(rX*16.0f, rY*16.0f, rZ * 16.0f)
+    }
+
+    fun buildRenderData(world: World, cX: Int, cZ: Int, l: RenderType): MutableList<Float> {
+        var verts: MutableList<Float> = mutableListOf()
+        for (y in 0..15) {
+            for (z in 0..15) {
+                for (x in 0..15) {
+                    var t = getTileAt(x, y, z)
+                    if (!t!!.shouldRender() || t.renderLayer() != l) continue
+                    ShapeHelper.appendVerts(world, cX, cZ, rY, x, y, z, t, verts)
+                }
+            }
+        }
+        return verts
+    }
+
+    fun bindData(verts: MutableList<Float>, l: RenderType,  prog: ShaderProgram) {
+        vertSize[l.ordinal] = verts.size
+        glBindVertexArray(vao[l.ordinal])
+        glBindBuffer(GL_ARRAY_BUFFER, vbo[l.ordinal])
+        glBufferData(GL_ARRAY_BUFFER, verts.toFloatArray(), GL_STATIC_DRAW)
+        setupAttribs(vao[l.ordinal], vbo[l.ordinal], prog)
     }
 
 

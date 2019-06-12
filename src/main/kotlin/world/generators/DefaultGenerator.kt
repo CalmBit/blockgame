@@ -74,11 +74,7 @@ class DefaultGenerator {
 
         for (x in 0..15) {
             for (z in 0..15) {
-                for(y in 0..10) {
-                    if(world.getTileAt((cX*16)+x, y, (cZ*16)+z)!!.block == BlockRegistration.AIR) {
-                       world.setTileAt((cX*16)+x,y,(cZ*16)+z, TileState(BlockRegistration.LAVA))
-                    }
-                }
+                world.setTileAt((cX*16)+x, 0, (cZ*16)+z, TileState(BlockRegistration.BORDERSTONE))
             }
         }
     }

@@ -23,6 +23,8 @@ object BlockRegistration {
     var LAVA = register(BlockLava().setUV(UVPair(13, 0)))
     var LOG = register(BlockLog(RegistryName("blockgame", "log")))
     var LEAVES = register(BlockLeaves(RegistryName("blockgame", "leaves")).setUV(UVPair(0, 1)))
+    var GLASS = register(BlockGlass(RegistryName("blockgame", "glass")).setUV(UVPair(1,1)))
+    var BORDERSTONE = register(Block(RegistryName("blockgame", "borderstone")).setUV(UVPair(2,1)))
 
     fun register(block: Block): Block = blockRegistry.register(block)
 }

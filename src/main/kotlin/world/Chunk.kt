@@ -31,10 +31,13 @@ class Chunk(world: World, val cX: Int, val cZ: Int) {
         _generator.generate(world,  cX, cZ)
     }
 
-    fun buildRenderData(world: World, prog: ShaderProgram) {
+    fun buildRenderData(world: World, l: RenderType): MutableList<MutableList<Float>> {
+        val verts = mutableListOf<MutableList<Float>>()
         for (i in 0 until _regions.size) {
-            _regions[i]!!.buildRenderData(world, this.cX, this.cZ, prog)
+            val v = _regions[i]!!.buildRenderData(world, this.cX, this.cZ, l)
+            verts.add(v)
         }
+        return verts
     }
 
     fun draw(l: RenderType, uniTrans: Int, timer: Float) {
@@ -51,5 +54,14 @@ class Chunk(world: World, val cX: Int, val cZ: Int) {
         if (_regions.size >= r) {
            _regions[r]!!.setTileAt(x, y % 16, z, tile)
         }
+    }
+
+    fun bindRenderData(verts: MutableList<MutableList<Float>>, type: RenderType, prog: ShaderProgram) {
+        //Logger.logger.info("Binding render data ($cX, $cZ)")
+        for (i in 0 until _regions.size) {
+            _regions[i]!!.bindData(verts[i], type, prog)
+        }
+        //Logger.logger.info("Done! ($cX, $cZ)")
+
     }
 }
