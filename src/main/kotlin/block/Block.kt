@@ -41,7 +41,7 @@ open class Block(private var _name: RegistryName) : IRegistryEntry {
         if(other != null) {
             return !other.shouldRender() || (!other.isOpaque() && this.isOpaque())
         }
-        return true
+        return false
     }
 
     open fun shouldRender(): Boolean = true

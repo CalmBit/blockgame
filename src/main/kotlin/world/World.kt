@@ -5,6 +5,7 @@ import block.RenderType
 import block.TileState
 import gl.ShaderProgram
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
@@ -20,6 +21,7 @@ class World(val window: Long, prog: ShaderProgram) {
     val maxX = 16
     val maxZ = 16
 
+    val generateChunkQueue: Queue<Chunk> = ArrayDeque<Chunk>(maxX*maxZ)
     val renderChunkQueue: Queue<Chunk> = ArrayDeque<Chunk>(maxX*maxZ)
     val bindChunkQueue: Queue<BindChunkBatch> = ArrayDeque<BindChunkBatch>(maxX*maxZ)
 
@@ -27,18 +29,37 @@ class World(val window: Long, prog: ShaderProgram) {
         for(x in 0 until maxX) {
             for(z in 0 until maxZ) {
                 _chunks[Pair(x,z)] = Chunk(this, x, z)
-                _chunks[Pair(x,z)]!!.generate(this)
-                renderChunkQueue.offer(_chunks[Pair(x,z)]!!)
+                generateChunkQueue.offer(_chunks[Pair(x,z)])
             }
         }
 
         var world = this
+
         GlobalScope.launch {
-            while(renderChunkQueue.size != 0) {
-                var c = renderChunkQueue.remove()
-                for(l in RenderType.values) {
-                    bindChunkQueue.offer(BindChunkBatch(c, c.buildRenderData(world, l), l))
+            while(true) {
+                if (generateChunkQueue.size > 0) {
+                    while (generateChunkQueue.size != 0) {
+                        var c = generateChunkQueue.remove()
+                        c.generate(world)
+                        renderChunkQueue.offer(c)
+                    }
                 }
+                delay(250L)
+            }
+        }
+
+        GlobalScope.launch {
+            while(true) {
+                if (renderChunkQueue.size > 4) {
+                    delay(500L)
+                    while (renderChunkQueue.size != 0) {
+                        var c = renderChunkQueue.remove()
+                        for (l in RenderType.values) {
+                            bindChunkQueue.offer(BindChunkBatch(c, c.buildRenderData(world, l), l))
+                        }
+                    }
+                }
+                delay(250L)
             }
         }
     }

@@ -4,11 +4,12 @@ import block.RenderType
 import block.TileState
 import gl.ShaderProgram
 import world.generators.DefaultGenerator
+import world.generators.SkyGenerator
 
 class Chunk(world: World, val cX: Int, val cZ: Int) {
     private var _regions: Array<Region?> = Array(8) { null }
     companion object {
-        private var _generator = DefaultGenerator()
+        private var _generator = SkyGenerator()
     }
 
     fun getTileAt(x: Int, y: Int, z: Int): TileState? {

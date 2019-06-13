@@ -15,6 +15,9 @@ object FontRenderer {
     var quads: Int = 0
     val verts = mutableListOf<Float>()
 
+    val fontHeight: Float
+    val fontWidths: FloatArray
+
     var fontShader: ShaderProgram
     var fontProj: Int
 
@@ -27,6 +30,11 @@ object FontRenderer {
         vbo = glGenBuffers()
         glBindBuffer(GL_ARRAY_BUFFER, vbo)
         font = Font("font/matchup.png")
+
+        fontHeight = font.height.toFloat()
+        fontWidths = FloatArray(font.fontTable.length) {
+            font.getWidthOf(font.fontTable[it]).toFloat()
+        }
 
         var textVert= VertexShader("shader/text.vert")
         var textFrag = FragmentShader("shader/text.frag")
@@ -59,51 +67,16 @@ object FontRenderer {
 
         var cX = x
         var cY = y
+        val height = fontHeight * scale
+
         for (c in text) {
             if (c == '\n') {
-                cY += font.height.toFloat() * scale + scale
+                cY += height + scale
                 cX = x
                 continue
             }
-            verts.add(cX)
-            verts.add(cY)
-            verts.add(color.x)
-            verts.add(color.y)
-            verts.add(color.z)
-            verts.add(font.getUVOf(c, UVPosition.U1))
-            verts.add(font.getUVOf(c, UVPosition.V1))
 
-            verts.add(cX)
-            verts.add(cY + font.height.toFloat() * scale)
-            verts.add(color.x)
-            verts.add(color.y)
-            verts.add(color.z)
-            verts.add(font.getUVOf(c, UVPosition.U1))
-            verts.add(font.getUVOf(c, UVPosition.V2))
-
-            verts.add(cX + font.getWidthOf(c) * scale)
-            verts.add(cY + font.height.toFloat() * scale)
-            verts.add(color.x)
-            verts.add(color.y)
-            verts.add(color.z)
-            verts.add(font.getUVOf(c, UVPosition.U2))
-            verts.add(font.getUVOf(c, UVPosition.V2))
-
-            verts.add(cX + font.getWidthOf(c) * scale)
-            verts.add(cY + font.height.toFloat() * scale)
-            verts.add(color.x)
-            verts.add(color.y)
-            verts.add(color.z)
-            verts.add(font.getUVOf(c, UVPosition.U2))
-            verts.add(font.getUVOf(c, UVPosition.V2))
-
-            verts.add(cX + font.getWidthOf(c) * scale)
-            verts.add(cY)
-            verts.add(color.x)
-            verts.add(color.y)
-            verts.add(color.z)
-            verts.add(font.getUVOf(c, UVPosition.U2))
-            verts.add(font.getUVOf(c, UVPosition.V1))
+            val width = getFontWidth(c) * scale
 
             verts.add(cX)
             verts.add(cY)
@@ -113,12 +86,60 @@ object FontRenderer {
             verts.add(font.getUVOf(c, UVPosition.U1))
             verts.add(font.getUVOf(c, UVPosition.V1))
 
-            cX += font.getWidthOf(c) * scale + (scale)
+            verts.add(cX)
+            verts.add(cY + height)
+            verts.add(color.x)
+            verts.add(color.y)
+            verts.add(color.z)
+            verts.add(font.getUVOf(c, UVPosition.U1))
+            verts.add(font.getUVOf(c, UVPosition.V2))
+
+            verts.add(cX + width)
+            verts.add(cY + height)
+            verts.add(color.x)
+            verts.add(color.y)
+            verts.add(color.z)
+            verts.add(font.getUVOf(c, UVPosition.U2))
+            verts.add(font.getUVOf(c, UVPosition.V2))
+
+            verts.add(cX + width)
+            verts.add(cY + height)
+            verts.add(color.x)
+            verts.add(color.y)
+            verts.add(color.z)
+            verts.add(font.getUVOf(c, UVPosition.U2))
+            verts.add(font.getUVOf(c, UVPosition.V2))
+
+            verts.add(cX + width)
+            verts.add(cY)
+            verts.add(color.x)
+            verts.add(color.y)
+            verts.add(color.z)
+            verts.add(font.getUVOf(c, UVPosition.U2))
+            verts.add(font.getUVOf(c, UVPosition.V1))
+
+            verts.add(cX)
+            verts.add(cY)
+            verts.add(color.x)
+            verts.add(color.y)
+            verts.add(color.z)
+            verts.add(font.getUVOf(c, UVPosition.U1))
+            verts.add(font.getUVOf(c, UVPosition.V1))
+
+            cX += width + scale
         }
 
         quads = verts.size / 7
 
         glBufferData(GL_ARRAY_BUFFER, verts.toFloatArray(), GL_DYNAMIC_DRAW)
+    }
+
+    fun getFontWidth(c: Char): Float {
+        if(c in font.fontTable) {
+            return fontWidths[font.fontTable.indexOf(c)]
+        } else {
+            return font.getWidthOf(c).toFloat()
+        }
     }
 
     fun draw(proj: Matrix4f) {
