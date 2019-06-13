@@ -1,6 +1,7 @@
 package world.generators.decorators
 
 import block.BlockRegistration
+import block.TilePalette
 import block.TileState
 import world.World
 import kotlin.random.Random
@@ -20,7 +21,7 @@ class OreDecorator(val ore: TileState, val chances: Int, val minY: Int, val maxY
             if(y < minY || y > maxY) continue
 
             if (world.getTileAt((cX*16)+x, y, (cZ*16)+z)!!.block != BlockRegistration.STONE) continue
-            world.setTileAt((cX*16)+x, y, (cZ*16)+z, ore)
+            world.setTileAt((cX*16)+x, y, (cZ*16)+z, TilePalette.getTileRepresentation(ore))
 
             var count = 1
 
@@ -54,7 +55,7 @@ class OreDecorator(val ore: TileState, val chances: Int, val minY: Int, val maxY
                 }
 
 
-                world.setTileAt((cX*16)+x + dX, y + dY, (cZ*16)+z + dZ, ore)
+                world.setTileAt((cX*16)+x + dX, y + dY, (cZ*16)+z + dZ, TilePalette.getTileRepresentation(ore))
                 x += dX
                 y += dY
                 z += dZ

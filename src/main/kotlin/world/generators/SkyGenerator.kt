@@ -1,6 +1,7 @@
 package world.generators
 
 import block.BlockRegistration
+import block.TilePalette
 import block.TileState
 import org.spongepowered.noise.Noise
 import org.spongepowered.noise.NoiseQuality
@@ -57,7 +58,7 @@ class SkyGenerator {
                                 }
                             }
                     }
-                    world.setTileAt((cX*16)+x, y, (cZ*16)+z, tile)
+                    world.setTileAt((cX*16)+x, y, (cZ*16)+z, TilePalette.getTileRepresentation(tile))
                 }
             }
         }

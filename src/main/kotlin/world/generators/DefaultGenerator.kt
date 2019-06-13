@@ -1,6 +1,7 @@
 package world.generators
 
 import block.BlockRegistration
+import block.TilePalette
 import block.TileState
 import org.spongepowered.noise.Noise
 import org.spongepowered.noise.NoiseQuality
@@ -63,7 +64,7 @@ class DefaultGenerator {
                                 }
                             }
                     }
-                    world.setTileAt((cX*16)+x, y, (cZ*16)+z, tile)
+                    world.setTileAt((cX*16)+x, y, (cZ*16)+z, TilePalette.getTileRepresentation(tile))
                 }
             }
         }
@@ -74,7 +75,7 @@ class DefaultGenerator {
 
         for (x in 0..15) {
             for (z in 0..15) {
-                world.setTileAt((cX*16)+x, 0, (cZ*16)+z, TileState(BlockRegistration.BORDERSTONE))
+                world.setTileAt((cX*16)+x, 0, (cZ*16)+z, TilePalette.getTileRepresentation(TileState(BlockRegistration.BORDERSTONE)))
             }
         }
     }

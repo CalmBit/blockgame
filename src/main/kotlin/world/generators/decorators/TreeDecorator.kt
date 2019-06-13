@@ -1,6 +1,7 @@
 package world.generators.decorators
 
 import block.BlockRegistration
+import block.TilePalette
 import block.TileState
 import world.World
 import java.lang.Exception
@@ -27,7 +28,7 @@ class TreeDecorator(val log: TileState, val leaves: TileState, val chances: Int)
             if (world.getTileAt((cX * 16) + x, y, (cZ * 16) + z)!!.block != BlockRegistration.GRASS) continue
             var height = world.random.nextInt(6, 9)
             for (i in 1..height) {
-                world.setTileAt((cX * 16) + x, y + i, (cZ * 16) + z, log)
+                world.setTileAt((cX * 16) + x, y + i, (cZ * 16) + z, TilePalette.getTileRepresentation(log))
                 when (i) {
                     in height-3 until height -> {
                         for (j in -2..2) {
@@ -42,7 +43,7 @@ class TreeDecorator(val log: TileState, val leaves: TileState, val chances: Int)
                                 world.setTileAt(
                                     (cX * 16) + x + j,
                                     y + i,
-                                    (cZ * 16) + z + k, leaves
+                                    (cZ * 16) + z + k, TilePalette.getTileRepresentation(leaves)
                                 )
                             }
                         }
@@ -60,14 +61,14 @@ class TreeDecorator(val log: TileState, val leaves: TileState, val chances: Int)
                                 world.setTileAt(
                                     (cX * 16) + x + j,
                                     y + i,
-                                    (cZ * 16) + z + k, leaves
+                                    (cZ * 16) + z + k, TilePalette.getTileRepresentation(leaves)
                                 )
                             }
                         }
                     }
                 }
             }
-            world.setTileAt((cX * 16) + x, y + height + 1, (cZ * 16) + z, leaves)
+            world.setTileAt((cX * 16) + x, y + height + 1, (cZ * 16) + z, TilePalette.getTileRepresentation(leaves))
 
 
             /*var count = 1

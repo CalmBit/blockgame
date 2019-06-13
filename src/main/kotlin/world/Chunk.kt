@@ -9,7 +9,7 @@ import world.generators.SkyGenerator
 class Chunk(world: World, val cX: Int, val cZ: Int) {
     private var _regions: Array<Region?> = Array(8) { null }
     companion object {
-        private var _generator = SkyGenerator()
+        private var _generator = DefaultGenerator()
     }
 
     fun getTileAt(x: Int, y: Int, z: Int): TileState? {
@@ -47,7 +47,7 @@ class Chunk(world: World, val cX: Int, val cZ: Int) {
         }
     }
 
-    fun setTileAt(x: Int, y: Int, z: Int, tile: TileState) {
+    fun setTileAt(x: Int, y: Int, z: Int, tile: Int) {
         if (x > 15 || x < 0 || z > 15 || z < 0 || y < 0 || y > 127) {
             return
         }

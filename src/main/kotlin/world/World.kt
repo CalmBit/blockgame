@@ -96,7 +96,7 @@ class World(val window: Long, prog: ShaderProgram) {
         return _seed
     }
 
-    fun setTileAt(x: Int, y: Int, z: Int, tile: TileState) {
+    fun setTileAt(x: Int, y: Int, z: Int, tile: Int) {
         var cPos = Pair((x / 16) - (if (x < 0) 1 else 0),(z / 16) - (if (z < 0) 1 else 0))
         if(_chunks.containsKey(cPos)) {
             _chunks[cPos]?.setTileAt(Math.abs(x%16),y,Math.abs(z%16), tile)

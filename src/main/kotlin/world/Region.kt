@@ -2,17 +2,17 @@ package world
 
 import block.BlockRegistration
 import block.RenderType
+import block.TilePalette
 import block.TileState
 import gl.ShaderProgram
 import org.joml.Matrix4f
-import org.lwjgl.opengl.GL15
 import org.lwjgl.opengl.GL31.*
 import org.lwjgl.system.MemoryStack
 import render.ShapeHelper
 
 
 class Region(val rX: Int, val rY: Int, val rZ: Int) {
-    private var _region: Array<TileState> = Array(16*16*16) { TileState(BlockRegistration.AIR) }
+    private var _region: Array<Int> = Array(16*16*16) { 0 }
     var vao: Array<Int> = Array(RenderType.values.size) {0}
     var vbo: Array<Int> = Array(RenderType.values.size) {0}
     var trans = Matrix4f()
@@ -53,8 +53,8 @@ class Region(val rX: Int, val rY: Int, val rZ: Int) {
     }
 
 
-    fun getTileAt(x: Int, y: Int, z: Int): TileState? = _region[(y*(16*16))+(z*16)+x]
-    fun setTileAt(x: Int, y: Int, z: Int, tile: TileState) {
+    fun getTileAt(x: Int, y: Int, z: Int): TileState? = TilePalette.getTileState(_region[(y*(16*16))+(z*16)+x])
+    fun setTileAt(x: Int, y: Int, z: Int, tile: Int) {
         _region[(y*(16*16))+(z*16)+x] = tile
     }
 

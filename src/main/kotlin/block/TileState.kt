@@ -7,4 +7,10 @@ class TileState(var block: Block) {
     fun shouldRender(): Boolean = block.shouldRender()
     fun isOpaque(): Boolean = block.isOpaque()
     fun renderLayer(): RenderType = block.renderLayer()
+    override fun equals(other: Any?): Boolean {
+        if(other is TileState) {
+            return this.block == other.block
+        }
+        return false
+    }
 }
