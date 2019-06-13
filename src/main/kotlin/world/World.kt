@@ -22,7 +22,7 @@ class World(val window: Long, prog: ShaderProgram) {
     val maxZ = 16
 
     val generateChunkQueue: Queue<Chunk> = ArrayDeque<Chunk>(maxX*maxZ)
-    val renderChunkQueue: Queue<Chunk> = ArrayDeque<Chunk>(maxX*maxZ)
+    val renderChunkQueue: Queue<RenderChunkBatch> = ArrayDeque<RenderChunkBatch>(maxX*maxZ)
     val bindChunkQueue: Queue<BindChunkBatch> = ArrayDeque<BindChunkBatch>(maxX*maxZ)
 
     init {
@@ -41,7 +41,7 @@ class World(val window: Long, prog: ShaderProgram) {
                     while (generateChunkQueue.size != 0) {
                         var c = generateChunkQueue.remove()
                         c.generate(world)
-                        renderChunkQueue.offer(c)
+                        renderChunkQueue.offer(RenderChunkBatch(c, true))
                     }
                 }
                 delay(250L)
@@ -50,12 +50,21 @@ class World(val window: Long, prog: ShaderProgram) {
 
         GlobalScope.launch {
             while(true) {
-                if (renderChunkQueue.size > 4) {
-                    delay(500L)
+                if (renderChunkQueue.size > 0) {
                     while (renderChunkQueue.size != 0) {
-                        var c = renderChunkQueue.remove()
+                        var (c,r) = renderChunkQueue.remove()
                         for (l in RenderType.values) {
                             bindChunkQueue.offer(BindChunkBatch(c, c.buildRenderData(world, l), l))
+                        }
+                        if(r) {
+                            for(x in -1..1) {
+                                for(z in -1..1) {
+                                    if(x == 0 && z == 0) continue
+                                    if(world._chunks.containsKey(Pair(c.cX+x, c.cZ+z))) {
+                                        renderChunkQueue.offer(RenderChunkBatch(world._chunks[Pair(c.cX+x, c.cZ+z)]!!, false))
+                                    }
+                                }
+                            }
                         }
                     }
                 }

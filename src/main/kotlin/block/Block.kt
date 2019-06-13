@@ -49,4 +49,12 @@ open class Block(private var _name: RegistryName) : IRegistryEntry {
     open fun renderLayer(): RenderType {
         return RenderType.NORMAL
     }
+
+    open fun preRender() {
+
+    }
+
+    open fun postRender() {
+
+    }
 }

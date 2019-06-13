@@ -61,6 +61,7 @@ class Region(val rX: Int, val rY: Int, val rZ: Int) {
     fun draw(l: RenderType, uniTrans: Int, timer: Float) {
         var stack: MemoryStack? = null
         try {
+            if(vertSize[l.ordinal] == 0) return
             stack = MemoryStack.stackPush()
             glBindVertexArray(vao[l.ordinal])
             glBindBuffer(GL_ARRAY_BUFFER, vbo[l.ordinal])
