@@ -6,6 +6,7 @@ object TilePalette {
     init {
         _palette.add(TileState(BlockRegistration.AIR))
     }
+
     fun getTileRepresentation(t: TileState): Int {
         if(_palette.contains(t)) {
             return _palette.indexOf(t)

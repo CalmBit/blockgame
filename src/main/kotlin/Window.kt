@@ -186,6 +186,8 @@ class Window {
 
     private suspend fun loop() {
 
+        val runtime = Runtime.getRuntime()
+
         if(lastFs == Instant.EPOCH) {
             lastFs = Instant.now()
         }
@@ -216,13 +218,13 @@ class Window {
                 tex!!.use()
             }
 
-            FontRenderer.renderWithShadow(4.0f, 0.0f, "BlockGame v.06122019 (FPS: $fps)\nPosition: ${pos.toString(DecimalFormat("0.000"))}", 1.5f)
-            FontRenderer.renderWithShadow(4.0f, wHeight-(FontRenderer.font.height*1.5f), "BETA VERSION (donut steel)", 1.5f)
+            FontRenderer.renderWithShadow(4.0f, 0.0f, "BlockGame v.Alpha 06132019 (FPS: $fps)\nPosition: ${pos.toString(DecimalFormat("0.000"))}", 1.5f)
             if(world!!.renderChunkQueue.size > 0) {
                 FontRenderer.renderWithShadow(4.0f, FontRenderer.font.height * 3.0f + 1.5f, "Generating Chunks: ${world!!.generateChunkQueue.size}", 1.5f)
                 FontRenderer.renderWithShadow(4.0f, FontRenderer.font.height * 4.5f + 1.5f, "Rendering Chunks: ${world!!.renderChunkQueue.size}", 1.5f)
                 FontRenderer.renderWithShadow(4.0f, FontRenderer.font.height * 6.0f + 1.5f, "Binding Chunks: ${world!!.bindChunkQueue.size}", 1.5f)
             }
+            FontRenderer.renderWithShadow(4.0f, FontRenderer.font.height * (7.5f) + 1.5f, "Memory: ${(runtime.totalMemory() - runtime.freeMemory())/(1024*1024)}MB/${runtime.totalMemory()/(1024*1024)}MB", 1.5f)
 
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 

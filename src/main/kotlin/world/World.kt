@@ -18,16 +18,16 @@ class World(val window: Long, prog: ShaderProgram) {
     private var _chunks: MutableMap<Pair<Int, Int>, Chunk> = mutableMapOf()
     private var _seed: Int = Random.nextInt(Int.MAX_VALUE)
     var random = Random(_seed)
-    val maxX = 16
-    val maxZ = 16
+    val maxX = 8
+    val maxZ = 8
 
-    val generateChunkQueue: Queue<Chunk> = ArrayDeque<Chunk>(maxX*maxZ)
-    val renderChunkQueue: Queue<RenderChunkBatch> = ArrayDeque<RenderChunkBatch>(maxX*maxZ)
-    val bindChunkQueue: Queue<BindChunkBatch> = ArrayDeque<BindChunkBatch>(maxX*maxZ)
+    val generateChunkQueue: Queue<Chunk> = ArrayDeque<Chunk>((maxX*2)*(maxZ*2))
+    val renderChunkQueue: Queue<RenderChunkBatch> = ArrayDeque<RenderChunkBatch>((maxX*2)*(maxZ*2))
+    val bindChunkQueue: Queue<BindChunkBatch> = ArrayDeque<BindChunkBatch>((maxX*2)*(maxZ*2))
 
     init {
-        for(x in 0 until maxX) {
-            for(z in 0 until maxZ) {
+        for(x in -8 until maxX) {
+            for(z in -8 until maxZ) {
                 _chunks[Pair(x,z)] = Chunk(this, x, z)
                 generateChunkQueue.offer(_chunks[Pair(x,z)])
             }
@@ -82,8 +82,14 @@ class World(val window: Long, prog: ShaderProgram) {
         }
     }
 
+    fun getTileAtAdjusted(cX: Int, cZ: Int, x: Int, y: Int, z: Int): TileState? {
+        var tX = adjustChunk(cX, x)
+        var tZ = adjustChunk(cZ, z)
+        return getTileAt(tX, y, tZ)
+    }
+
     fun getTileAt(x: Int, y: Int, z: Int): TileState? {
-        var cPos = Pair((x / 16) - (if (x < 0) 1 else 0),(z / 16) - (if (z < 0) 1 else 0))
+        var cPos = Pair(Math.floor(x / 16.0).toInt(),Math.floor(z / 16.0).toInt())
 
         if(_chunks.containsKey(cPos)) {
             var c = _chunks[cPos]
@@ -96,15 +102,21 @@ class World(val window: Long, prog: ShaderProgram) {
         return _seed
     }
 
-    fun setTileAt(x: Int, y: Int, z: Int, tile: Int) {
-        var cPos = Pair((x / 16) - (if (x < 0) 1 else 0),(z / 16) - (if (z < 0) 1 else 0))
+    private fun setTileAt(x: Int, y: Int, z: Int, tile: Int) {
+        var cPos = Pair(Math.floor(x / 16.0).toInt(),Math.floor(z / 16.0).toInt())
         if(_chunks.containsKey(cPos)) {
             _chunks[cPos]?.setTileAt(Math.abs(x%16),y,Math.abs(z%16), tile)
         }
     }
 
+    fun setTileAtAdjusted(cX: Int, cZ: Int, x: Int, y: Int, z: Int, tileRepresentation: Int) {
+        var tX = adjustChunk(cX, x)
+        var tZ = adjustChunk(cZ, z)
+        setTileAt(tX, y, tZ, tileRepresentation)
+    }
+
     fun getTopTilePos(x: Int, z: Int): Int {
-        var cPos = Pair((x / 16) - (if (x < 0) 1 else 0),(z / 16) - (if (z < 0) 1 else 0))
+        var cPos = Pair(Math.floor(x / 16.0).toInt(),Math.floor(z / 16.0).toInt())
         if(_chunks.containsKey(cPos)) {
             var y = 127
             while(_chunks[cPos]!!.getTileAt(Math.abs(x%16),y,Math.abs(z%16))!!.block == BlockRegistration.AIR)
@@ -115,4 +127,15 @@ class World(val window: Long, prog: ShaderProgram) {
         }
         throw Exception("chunk not found")
     }
+
+    fun getTopTilePosAdjusted(cX: Int, cZ: Int, x: Int, z: Int): Int {
+        var tX = adjustChunk(cX, x)
+        var tZ = adjustChunk(cZ, z)
+        return getTopTilePos(tX, tZ)
+    }
+
+    fun adjustChunk(c: Int, v: Int): Int {
+        return if(c < 0) (((c*16)+1) + (15-v)) else (c*16) + v
+    }
+
 }

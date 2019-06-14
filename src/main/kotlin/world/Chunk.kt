@@ -4,6 +4,7 @@ import block.RenderType
 import block.TileState
 import gl.ShaderProgram
 import world.generators.DefaultGenerator
+import world.generators.HellGenerator
 import world.generators.SkyGenerator
 
 class Chunk(world: World, val cX: Int, val cZ: Int) {

@@ -18,8 +18,9 @@ class SkyGenerator {
         var _decorators : MutableList<IDecorator> = mutableListOf()
         val REPLACE_ONLY_STONE = {t: TileState -> t.block == BlockRegistration.STONE}
         val REPLACE_NOT_WATER = {t: TileState -> t.block != BlockRegistration.WATER && t.block != BlockRegistration.AIR}
+        val STAY_ON_GRASS = {t: TileState -> t.block != BlockRegistration.GRASS}
         init {
-            _decorators.add(TreeDecorator(TileState(BlockRegistration.LOG), TileState(BlockRegistration.LEAVES), 4))
+            _decorators.add(TreeDecorator(TileState(BlockRegistration.LOG), TileState(BlockRegistration.LEAVES), 4, STAY_ON_GRASS))
             _decorators.add(OreDecorator(TileState(BlockRegistration.COAL_ORE), 12, 12, 78, 20, REPLACE_ONLY_STONE ))
             _decorators.add(OreDecorator(TileState(BlockRegistration.IRON_ORE), 8, 4, 64, 12, REPLACE_ONLY_STONE))
             _decorators.add(OreDecorator(TileState(BlockRegistration.GOLD_ORE), 4, 4, 32, 8, REPLACE_ONLY_STONE))
@@ -58,7 +59,7 @@ class SkyGenerator {
                                 }
                             }
                     }
-                    world.setTileAt((cX*16)+x, y, (cZ*16)+z, TilePalette.getTileRepresentation(tile))
+                    world.setTileAtAdjusted(cX, cZ, x, y, z, TilePalette.getTileRepresentation(tile))
                 }
             }
         }

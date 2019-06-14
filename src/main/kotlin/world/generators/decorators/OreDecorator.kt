@@ -20,8 +20,11 @@ class OreDecorator(val ore: TileState, val chances: Int, val minY: Int, val maxY
 
             if(y < minY || y > maxY) continue
 
-            if (world.getTileAt((cX*16)+x, y, (cZ*16)+z)!!.block != BlockRegistration.STONE) continue
-            world.setTileAt((cX*16)+x, y, (cZ*16)+z, TilePalette.getTileRepresentation(ore))
+            if(world.getTileAtAdjusted(cX, cZ, x, y, z) == null) {
+                world.getTileAtAdjusted(cX, cZ, x, y, z)
+            }
+            if (world.getTileAtAdjusted(cX, cZ, x, y, z)!!.block != BlockRegistration.STONE) continue
+            world.setTileAtAdjusted(cX, cZ, x, y, z, TilePalette.getTileRepresentation(ore))
 
             var count = 1
 
@@ -48,14 +51,15 @@ class OreDecorator(val ore: TileState, val chances: Int, val minY: Int, val maxY
                     dZ = 0
                 }
 
-                if (!replacePredicate(world.getTileAt((cX*16)+x + dX, y +dY, (cZ*16)+z + dZ)!!)) {
+
+                if (!replacePredicate(world.getTileAtAdjusted(cX, cZ, x + dX, y +dY, z + dZ)!!)) {
                     dX = 0
                     dY = 0
                     dZ = 0
                 }
 
 
-                world.setTileAt((cX*16)+x + dX, y + dY, (cZ*16)+z + dZ, TilePalette.getTileRepresentation(ore))
+                world.setTileAtAdjusted(cX, cZ, x + dX, y + dY, z + dZ, TilePalette.getTileRepresentation(ore))
                 x += dX
                 y += dY
                 z += dZ

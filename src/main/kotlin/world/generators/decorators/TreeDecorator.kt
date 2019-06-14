@@ -7,7 +7,7 @@ import world.World
 import java.lang.Exception
 import kotlin.random.Random
 
-class TreeDecorator(val log: TileState, val leaves: TileState, val chances: Int) : IDecorator {
+class TreeDecorator(val log: TileState, val leaves: TileState, val chances: Int, val stayPredicate: (TileState) -> Boolean) : IDecorator {
     override fun decorate(world: World, cX: Int, cZ: Int) {
         world.random = Random(world.getSeed())
         world.random = Random(
@@ -20,30 +20,30 @@ class TreeDecorator(val log: TileState, val leaves: TileState, val chances: Int)
             var z = +world.random.nextInt(-8, 8)
             var y = 0
             try {
-                y = world.getTopTilePos((cX * 16) + x, (cZ * 16) + z)
+                y = world.getTopTilePosAdjusted(cX, cZ, x, z)
             } catch (e: Exception) {
                 continue
             }
 
-            if (world.getTileAt((cX * 16) + x, y, (cZ * 16) + z)!!.block != BlockRegistration.GRASS) continue
+            if (stayPredicate(world.getTileAtAdjusted(cX, cZ, x, y, z)!!)) continue
             var height = world.random.nextInt(6, 9)
             for (i in 1..height) {
-                world.setTileAt((cX * 16) + x, y + i, (cZ * 16) + z, TilePalette.getTileRepresentation(log))
+                world.setTileAtAdjusted(cX, cZ, x, y + i, z, TilePalette.getTileRepresentation(log))
                 when (i) {
                     in height-3 until height -> {
                         for (j in -2..2) {
                             for (k in -2..2) {
                                 if((Math.abs(j) == 2 || Math.abs(k) == 2) && Math.abs(j) == Math.abs(k)) continue
-                                if (world.getTileAt(
-                                        (cX * 16) + x + j,
+                                if (world.getTileAtAdjusted(cX, cZ,
+                                        x + j,
                                         y + i,
-                                        (cZ * 16) + z + k
+                                        z + k
                                     )?.block != BlockRegistration.AIR
                                 ) continue
-                                world.setTileAt(
-                                    (cX * 16) + x + j,
+                                world.setTileAtAdjusted(cX, cZ,
+                                    x + j,
                                     y + i,
-                                    (cZ * 16) + z + k, TilePalette.getTileRepresentation(leaves)
+                                    z + k, TilePalette.getTileRepresentation(leaves)
                                 )
                             }
                         }
@@ -52,23 +52,23 @@ class TreeDecorator(val log: TileState, val leaves: TileState, val chances: Int)
                         for (j in -1..1) {
                             for (k in -1..1) {
                                 if((Math.abs(j) == 1 || Math.abs(k) == 1) && Math.abs(j) == Math.abs(k)) continue
-                                if (world.getTileAt(
-                                        (cX * 16) + x + j,
+                                if (world.getTileAtAdjusted(cX, cZ,
+                                        x + j,
                                         y + i,
-                                        (cZ * 16) + z + k
+                                        z + k
                                     )?.block != BlockRegistration.AIR
                                 ) continue
-                                world.setTileAt(
-                                    (cX * 16) + x + j,
+                                world.setTileAtAdjusted(cX, cZ,
+                                    x + j,
                                     y + i,
-                                    (cZ * 16) + z + k, TilePalette.getTileRepresentation(leaves)
+                                    z + k, TilePalette.getTileRepresentation(leaves)
                                 )
                             }
                         }
                     }
                 }
             }
-            world.setTileAt((cX * 16) + x, y + height + 1, (cZ * 16) + z, TilePalette.getTileRepresentation(leaves))
+            world.setTileAtAdjusted(cX, cZ, x, y + height + 1, z, TilePalette.getTileRepresentation(leaves))
 
 
             /*var count = 1
