@@ -93,7 +93,7 @@ class World(val window: Long, prog: ShaderProgram) {
 
         if(_chunks.containsKey(cPos)) {
             var c = _chunks[cPos]
-            return c?.getTileAt(Math.abs(x%16),y,Math.abs(z%16))
+            return c?.getTileAt(if(x < 0) (x%16)+15 else (x%16),y,if(z < 0) (z%16)+15 else (z%16))
         }
         return null
     }
@@ -105,7 +105,7 @@ class World(val window: Long, prog: ShaderProgram) {
     private fun setTileAt(x: Int, y: Int, z: Int, tile: Int) {
         var cPos = Pair(Math.floor(x / 16.0).toInt(),Math.floor(z / 16.0).toInt())
         if(_chunks.containsKey(cPos)) {
-            _chunks[cPos]?.setTileAt(Math.abs(x%16),y,Math.abs(z%16), tile)
+            _chunks[cPos]?.setTileAt(if(x < 0) (x%16)+15 else (x%16),y,if(z < 0) (z%16)+15 else (z%16), tile)
         }
     }
 
@@ -119,7 +119,7 @@ class World(val window: Long, prog: ShaderProgram) {
         var cPos = Pair(Math.floor(x / 16.0).toInt(),Math.floor(z / 16.0).toInt())
         if(_chunks.containsKey(cPos)) {
             var y = 127
-            while(_chunks[cPos]!!.getTileAt(Math.abs(x%16),y,Math.abs(z%16))!!.block == BlockRegistration.AIR)
+            while(_chunks[cPos]!!.getTileAt(if(x < 0) (x%16)+15 else (x%16),y,if(z < 0) (z%16)+15 else (z%16))!!.block == BlockRegistration.AIR)
             {
                 y--
             }
