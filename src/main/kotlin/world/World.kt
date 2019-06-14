@@ -7,10 +7,6 @@ import gl.ShaderProgram
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.sync.Mutex
-import org.lwjgl.glfw.GLFW
-import org.lwjgl.opengl.GL
 import java.util.*
 import kotlin.random.Random
 
@@ -89,11 +85,11 @@ class World(val window: Long, prog: ShaderProgram) {
     }
 
     fun getTileAt(x: Int, y: Int, z: Int): TileState? {
-        var cPos = Pair(Math.floor(x / 16.0).toInt(),Math.floor(z / 16.0).toInt())
+        var cPos = Pair(x shr 4, z shr 4)
 
         if(_chunks.containsKey(cPos)) {
             var c = _chunks[cPos]
-            return c?.getTileAt(if(x < 0) (x%16)+15 else (x%16),y,if(z < 0) (z%16)+15 else (z%16))
+            return c?.getTileAt(x and 15, y, z and 15)
         }
         return null
     }
@@ -103,9 +99,9 @@ class World(val window: Long, prog: ShaderProgram) {
     }
 
     private fun setTileAt(x: Int, y: Int, z: Int, tile: Int) {
-        var cPos = Pair(Math.floor(x / 16.0).toInt(),Math.floor(z / 16.0).toInt())
+        var cPos = Pair(x shr 4, z shr 4)
         if(_chunks.containsKey(cPos)) {
-            _chunks[cPos]?.setTileAt(if(x < 0) (x%16)+15 else (x%16),y,if(z < 0) (z%16)+15 else (z%16), tile)
+            _chunks[cPos]?.setTileAt(x and 15, y,z and 15, tile)
         }
     }
 
@@ -116,10 +112,10 @@ class World(val window: Long, prog: ShaderProgram) {
     }
 
     fun getTopTilePos(x: Int, z: Int): Int {
-        var cPos = Pair(Math.floor(x / 16.0).toInt(),Math.floor(z / 16.0).toInt())
+        var cPos = Pair(x shr 4, z shr 4)
         if(_chunks.containsKey(cPos)) {
             var y = 127
-            while(_chunks[cPos]!!.getTileAt(if(x < 0) (x%16)+15 else (x%16),y,if(z < 0) (z%16)+15 else (z%16))!!.block == BlockRegistration.AIR)
+            while(_chunks[cPos]!!.getTileAt(x and 15, y,z and 15)!!.block == BlockRegistration.AIR)
             {
                 y--
             }
@@ -134,8 +130,7 @@ class World(val window: Long, prog: ShaderProgram) {
         return getTopTilePos(tX, tZ)
     }
 
-    fun adjustChunk(c: Int, v: Int): Int {
-        return if(c < 0) (((c*16)+1) + (15-v)) else (c*16) + v
+    fun adjustChunk(chunk: Int, position: Int): Int {
+        return (chunk shl 4) + position + if (chunk < 0) 0 else 0
     }
-
 }
