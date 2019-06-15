@@ -3,6 +3,7 @@ package gl
 import org.lwjgl.opengl.GL31.*
 import org.lwjgl.stb.STBImage
 import org.lwjgl.system.MemoryStack
+import java.io.File
 import java.lang.RuntimeException
 import java.nio.ByteBuffer
 
@@ -29,6 +30,10 @@ class Font(file: String) {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
         var stack: MemoryStack? = null
         var img: ByteBuffer? = null
+        var fileName = file
+        if(File.separator != "/") {
+            fileName = file.replace("/", "\\")
+        }
         try {
             stack = MemoryStack.stackPush()
             var w = stack.mallocInt(1)

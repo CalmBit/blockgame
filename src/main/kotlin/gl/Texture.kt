@@ -3,6 +3,7 @@ package gl
 import org.lwjgl.opengl.GL31.*
 import org.lwjgl.stb.STBImage.*
 import org.lwjgl.system.MemoryStack
+import java.io.File
 import java.nio.ByteBuffer
 
 class Texture(file: String) {
@@ -18,12 +19,16 @@ class Texture(file: String) {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
         var stack: MemoryStack? = null
         var img: ByteBuffer? = null
+        var fileName = file
+        if(File.separator != "/") {
+            fileName = file.replace("/", "\\")
+        }
         try {
             stack = MemoryStack.stackPush()
             var w = stack.mallocInt(1)
             var h = stack.mallocInt(1)
             var chan = stack.mallocInt(1)
-            img = stbi_load(javaClass.classLoader.getResource(file).path, w,h,chan,4)
+            img = stbi_load(javaClass.classLoader.getResource(fileName).path, w,h,chan,4)
                 ?: throw RuntimeException("Unable to load " + file + "\n" + stbi_failure_reason())
             width = w.get(0)
             height = h.get(0)
