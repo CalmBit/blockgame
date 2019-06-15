@@ -269,10 +269,10 @@ class Window {
                 ticks++
             }
 
-            FontRenderer.renderWithShadow(4.0f, 0.0f, "BlockGame v.Alpha 06132019 (FPS: $fps / TPS: $tps)", 1.5f)
-            FontRenderer.renderWithShadow(4.0f, FontRenderer.font.height * 1.5f + 1.5f, "Position: ${pos.toString(DecimalFormat("0.000"))} (Chunk: ${pos.x.toInt() shr 4}, ${pos.z.toInt() shr 4})", 1.5f)
-            FontRenderer.renderWithShadow(4.0f, FontRenderer.font.height * 3.0f + 1.5f, "G: ${world!!.generateChunkQueue.size} / D: ${world!!.decorateChunkQueue.size} / R: ${world!!.renderChunkQueue.size} / B: ${world!!.bindChunkQueue.size}", 1.5f)
-            FontRenderer.renderWithShadow(4.0f, FontRenderer.font.height * (4.5f) + 1.5f, "Memory: ${(runtime.totalMemory() - runtime.freeMemory())/(1024*1024)}MB/${runtime.totalMemory()/(1024*1024)}MB", 1.5f)
+                FontRenderer.renderWithShadow(12.0f, 0.0f, "BlockGame v.Alpha 06132019 (FPS: $fps / TPS: $tps)", 3.0f)
+                FontRenderer.renderWithShadow(12.0f, FontRenderer.font.height * 3.0f + 3.0f, "Position: ${pos.toString(DecimalFormat("0.000"))} (Chunk: ${pos.x.toInt() shr 4}, ${pos.z.toInt() shr 4})", 3.0f)
+                FontRenderer.renderWithShadow(12.0f, FontRenderer.font.height * 6.0f + 3.0f, "G: ${world!!.generateChunkQueue.size} / D: ${world!!.decorateChunkQueue.size} / R: ${world!!.renderChunkQueue.size} / B: ${world!!.bindChunkQueue.size}", 3.0f)
+                FontRenderer.renderWithShadow(12.0f, FontRenderer.font.height * (9.0f) + 3.0f, "Memory: ${(runtime.totalMemory() - runtime.freeMemory())/(1024*1024)}MB/${runtime.totalMemory()/(1024*1024)}MB", 3.0f)
 
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
@@ -301,7 +301,7 @@ class Window {
             world!!.draw(uniTrans, timer)
 
             proj = Matrix4f()
-                .ortho(0.0f, wWidth, wHeight, 0.0f, -1.0f, 10.0f)
+                .ortho(0.0f, wWidth*2.0f, wHeight*2.0f, 0.0f, -1.0f, 10.0f)
 
             FontRenderer.draw(proj)
 
