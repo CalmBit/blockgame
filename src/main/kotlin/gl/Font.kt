@@ -16,6 +16,9 @@ class Font(file: String) {
     var currentU: Float = 0.0f
     var fontWidths = Array(fontTable.length) { 0 }
 
+    val uOffset: Float
+    val vOffset: Float
+
     init {
         glBindTexture(GL_TEXTURE_2D, tex)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
@@ -36,6 +39,8 @@ class Font(file: String) {
         } finally {
             stack?.pop()
         }
+        uOffset = 1.0f/(width*4)
+        vOffset = 1.0f/(height*4)
         glTexImage2D(
             GL_TEXTURE_2D,
             0,
@@ -69,10 +74,10 @@ class Font(file: String) {
                 }
                 if (empty) {
                     fontWidths[currentLetter] = lWidth
-                    uvTable[currentLetter * 4] = currentU
-                    uvTable[currentLetter * 4 + 1] = 0.0f
-                    uvTable[currentLetter * 4 + 2] = currentU + (lWidth.toFloat() * (1.0f / width))
-                    uvTable[currentLetter * 4 + 3] = 1.0f
+                    uvTable[currentLetter * 4] = currentU + uOffset
+                    uvTable[currentLetter * 4 + 1] = 0.0f + vOffset
+                    uvTable[currentLetter * 4 + 2] = currentU + (lWidth.toFloat() * (1.0f / width)) - uOffset
+                    uvTable[currentLetter * 4 + 3] = 1.0f - vOffset
                     currentU += (lWidth + 1).toFloat() * (1.0f / width)
 
                     lWidth = 0
