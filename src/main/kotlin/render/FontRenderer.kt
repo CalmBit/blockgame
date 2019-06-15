@@ -29,7 +29,7 @@ object FontRenderer {
         glBindVertexArray(vao)
         vbo = glGenBuffers()
         glBindBuffer(GL_ARRAY_BUFFER, vbo)
-        font = Font("font/matchup.png")
+        font = Font("font/alphabet.png")
 
         fontHeight = font.height.toFloat()
         fontWidths = FloatArray(font.fontTable.length) {

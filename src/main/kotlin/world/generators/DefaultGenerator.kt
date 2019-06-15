@@ -57,7 +57,7 @@ class DefaultGenerator : IGenerator {
                         tile =
                             when (y) {
                                 in height + 1..127 -> tile
-                                height -> if(sandy) TileState(BlockRegistration.SAND) else TileState(BlockRegistration.DIRT)
+                                height -> if(sandy) TileState(BlockRegistration.SAND) else TileState(BlockRegistration.GRASS)
                                 in height - 5 until height -> if(sandy) TileState(BlockRegistration.SAND) else TileState(
                                     BlockRegistration.DIRT)
                                 else -> {

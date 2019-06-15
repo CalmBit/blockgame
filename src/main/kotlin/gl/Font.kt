@@ -11,13 +11,13 @@ class Font(file: String) {
     var width: Int
     var height: Int
     var fontTable =
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.,;:?!-_~#\"'&()[]{}^|`/\\@°+=*%€\$£¢<>©®ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØŒÙÚÛÜÝÞàáâãäåæçèéêëìíîïðñòóôõöøœùúûüýþßÿ¿¡"
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.,;:?!-_~#\"'&()[]"//{}^|`/\\@°+=*%€\$£¢<>©®ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØŒÙÚÛÜÝÞàáâãäåæçèéêëìíîïðñòóôõöøœùúûüýþßÿ¿¡"
     var uvTable: Array<Float> = Array(fontTable.length * 4) { 0.0f }
     var currentU: Float = 0.0f
-    var fontWidths = Array(fontTable.length) { 0 }
+    //var fontWidths = Array(fontTable.length) { 0 }
 
-    val uOffset: Float
-    val vOffset: Float
+    var fontWidth = 8
+    val u: Float
 
     init {
         glBindTexture(GL_TEXTURE_2D, tex)
@@ -39,8 +39,7 @@ class Font(file: String) {
         } finally {
             stack?.pop()
         }
-        uOffset = 1.0f/(width*4)
-        vOffset = 1.0f/(height*4)
+        u = 8.0f/(width.toFloat())
         glTexImage2D(
             GL_TEXTURE_2D,
             0,
@@ -58,10 +57,15 @@ class Font(file: String) {
         var b: Byte = 0
         var a: Byte = 0
         val nil: Byte = 0x00
-        var currentLetter = 0
         var lWidth = 0
         if (img != null) {
-            for (x in 0 until width) {
+            for(currentLetter in 0 until fontTable.length) {
+                uvTable[currentLetter * 4] = (currentLetter.toFloat()*u)// + uOffset
+                uvTable[currentLetter * 4 + 1] = 0.0f
+                uvTable[currentLetter * 4 + 2] = (currentLetter.toFloat()*u) + u//  - uOffset
+                uvTable[currentLetter * 4 + 3] = 1.0f
+            }
+            /*for (x in 0 until width) {
                 var empty = true
                 for (y in 0 until height) {
                     a = img[(y * width * 4) + (x * 4) + 3]
@@ -83,7 +87,7 @@ class Font(file: String) {
                     lWidth = 0
                     currentLetter++
                 }
-            }
+            }*/
         }
         STBImage.stbi_image_free(img)
         glBindTexture(GL_TEXTURE_2D, 0)
@@ -97,6 +101,9 @@ class Font(file: String) {
         if (c == ' ') {
             return 0.0f
         }
+        if(fontTable.indexOf(c) == -1) {
+            return 0.0f
+        }
         return uvTable[(fontTable.indexOf(c)) * 4 + pos.ordinal]
     }
 
@@ -104,6 +111,6 @@ class Font(file: String) {
         if (c == ' ') {
             return 4
         }
-        return fontWidths[fontTable.indexOf(c)]
+        return fontWidth //fontWidths[fontTable.indexOf(c)]
     }
 }
