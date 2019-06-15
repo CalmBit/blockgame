@@ -3,11 +3,13 @@ import kotlinx.coroutines.runBlocking
 import org.joml.Math
 import org.joml.Matrix4f
 import org.joml.Vector3f
+import org.lwjgl.BufferUtils
 import org.lwjgl.glfw.Callbacks.glfwFreeCallbacks
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.glfw.GLFWErrorCallback
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL31.*
+import org.lwjgl.stb.STBImageWrite
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryUtil.NULL
 import render.FontRenderer
@@ -17,6 +19,7 @@ import world.World
 import java.text.DecimalFormat
 import java.time.Duration
 import java.time.Instant
+import java.util.*
 
 class Window {
     private var _window = NULL
@@ -98,8 +101,23 @@ class Window {
             else if(key == GLFW_KEY_R && action == GLFW_RELEASE) {
                 texUse = !texUse
             }
+            else if(key == GLFW_KEY_F2 && action == GLFW_RELEASE) {
+                var b = BufferUtils.createByteBuffer(wWidth.toInt()*wHeight.toInt()*3*4)
+                var t = BufferUtils.createByteBuffer(wWidth.toInt()*wHeight.toInt()*3*4)
+                glReadPixels(0,0,wWidth.toInt()*2,wHeight.toInt()*2,GL_RGB, GL_UNSIGNED_BYTE, b)
+                for(i in 0 until 600*2) {
+                    for(j in 0 until 800*2) {
+                        t.put((((600*2)-i-1) * (800*2) * 3)+(j*3), b.get((i*(800*2) * 3)+(j*3)))
+                        t.put((((600*2)-i-1) * (800*2) * 3)+(j*3)+1, b.get((i*(800*2) * 3)+(j*3)+1))
+                        t.put((((600*2)-i-1) * (800*2) * 3)+(j*3)+2, b.get((i*(800*2) * 3)+(j*3)+2))
+                    }
+                }
+                STBImageWrite.stbi_write_png("test.png", wWidth.toInt()*2, wHeight.toInt()*2, 3, t, 0)
+                Logger.logger.info("saved test.png")
+            }
             else {
-                keyStates[key] = (action != GLFW_RELEASE)
+                if(key > 0)
+                    keyStates[key] = (action != GLFW_RELEASE)
             }
         }
 
