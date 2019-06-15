@@ -7,6 +7,7 @@ import gl.ShaderProgram
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
 import java.util.*
 import kotlin.random.Random
 
@@ -18,12 +19,17 @@ class World(val window: Long, prog: ShaderProgram) {
     val maxZ = 8
 
     val generateChunkQueue: Queue<Chunk> = ArrayDeque<Chunk>((maxX*2)*(maxZ*2))
+    val decorateChunkQueue: Queue<Chunk> = ArrayDeque<Chunk>((maxX*2)*(maxZ*2))
+    val renderChunkMutex: Mutex = Mutex()
     val renderChunkQueue: Queue<RenderChunkBatch> = ArrayDeque<RenderChunkBatch>((maxX*2)*(maxZ*2))
     val bindChunkQueue: Queue<BindChunkBatch> = ArrayDeque<BindChunkBatch>((maxX*2)*(maxZ*2))
+    val lazyChunkQueue: Queue<Pair<Int, Int>> = ArrayDeque<Pair<Int, Int>>((maxX*2)*(maxZ*2))
+
+    val worldType: WorldType = WorldType.DEFAULT
 
     init {
-        for(x in -8 until maxX) {
-            for(z in -8 until maxZ) {
+        for(x in -maxX until maxX) {
+            for(z in -maxX until maxZ) {
                 _chunks[Pair(x,z)] = Chunk(this, x, z)
                 generateChunkQueue.offer(_chunks[Pair(x,z)])
             }
@@ -37,7 +43,43 @@ class World(val window: Long, prog: ShaderProgram) {
                     while (generateChunkQueue.size != 0) {
                         var c = generateChunkQueue.remove()
                         c.generate(world)
+                        if(world._chunks[Pair(c.cX-1, c.cZ)] != null && !world._chunks[Pair(c.cX-1, c.cZ)]!!.hasDecorated) {
+                            decorateChunkQueue.offer(world._chunks[Pair(c.cX-1, c.cZ)])
+                        }
+                        if(world._chunks[Pair(c.cX, c.cZ-1)] != null && !world._chunks[Pair(c.cX, c.cZ-1)]!!.hasDecorated) {
+                            decorateChunkQueue.offer(world._chunks[Pair(c.cX, c.cZ - 1)])
+                        }
+                        if(world._chunks[Pair(c.cX-1, c.cZ-1)] != null && !world._chunks[Pair(c.cX-1, c.cZ-1)]!!.hasDecorated) {
+                            decorateChunkQueue.offer(world._chunks[Pair(c.cX - 1, c.cZ - 1)])
+                        }
+                        renderChunkMutex.lock()
                         renderChunkQueue.offer(RenderChunkBatch(c, true))
+                        renderChunkMutex.unlock()
+                    }
+                }
+                delay(250L)
+            }
+        }
+
+        GlobalScope.launch {
+            while(true) {
+                if (decorateChunkQueue.size > 0) {
+                    while (decorateChunkQueue.size != 0) {
+                        var c: Chunk = decorateChunkQueue.poll() ?: continue
+                        if(c.hasDecorated) continue
+                        try {
+                            if (world._chunks[Pair(c.cX + 1, c.cZ)]!!.hasGenerated
+                                && world._chunks[Pair(c.cX, c.cZ + 1)]!!.hasGenerated
+                                && world._chunks[Pair(c.cX + 1, c.cZ + 1)]!!.hasGenerated
+                            ) {
+                                c.decorate(world)
+                                renderChunkMutex.lock()
+                                renderChunkQueue.offer(RenderChunkBatch(c, true))
+                                renderChunkMutex.unlock()
+                            } else {
+                                decorateChunkQueue.offer(c)
+                            }
+                        } catch(e: java.lang.Exception) { }
                     }
                 }
                 delay(250L)
@@ -47,8 +89,24 @@ class World(val window: Long, prog: ShaderProgram) {
         GlobalScope.launch {
             while(true) {
                 if (renderChunkQueue.size > 0) {
+                    var dead: MutableList<RenderChunkBatch> = mutableListOf()
                     while (renderChunkQueue.size != 0) {
                         var (c,r) = renderChunkQueue.remove()
+                        renderChunkMutex.lock()
+                        for(q in renderChunkQueue) {
+                            if(q.first == c) {
+                               r = r || q.second
+                               dead.add(q)
+                            }
+                        }
+
+                        for(v in dead) {
+                            renderChunkQueue.remove(v)
+                        }
+                        dead.clear()
+                        renderChunkMutex.unlock()
+
+
                         for (l in RenderType.values) {
                             bindChunkQueue.offer(BindChunkBatch(c, c.buildRenderData(world, l), l))
                         }
@@ -57,7 +115,9 @@ class World(val window: Long, prog: ShaderProgram) {
                                 for(z in -1..1) {
                                     if(x == 0 && z == 0) continue
                                     if(world._chunks.containsKey(Pair(c.cX+x, c.cZ+z))) {
+                                        renderChunkMutex.lock()
                                         renderChunkQueue.offer(RenderChunkBatch(world._chunks[Pair(c.cX+x, c.cZ+z)]!!, false))
+                                        renderChunkMutex.unlock()
                                     }
                                 }
                             }
@@ -102,6 +162,10 @@ class World(val window: Long, prog: ShaderProgram) {
         var cPos = Pair(x shr 4, z shr 4)
         if(_chunks.containsKey(cPos)) {
             _chunks[cPos]?.setTileAt(x and 15, y,z and 15, tile)
+        } else {
+            _chunks[cPos] = Chunk(this, cPos.first, cPos.second)
+            _chunks[cPos]?.setTileAt(x and 15, y,z and 15, tile)
+            generateChunkQueue.offer(_chunks[cPos])
         }
     }
 
@@ -131,6 +195,24 @@ class World(val window: Long, prog: ShaderProgram) {
     }
 
     fun adjustChunk(chunk: Int, position: Int): Int {
-        return (chunk shl 4) + position + if (chunk < 0) 0 else 0
+        if(position > 15) {
+            return (chunk shl 4) + position
+        }
+        return (chunk shl 4) + position
+    }
+
+    fun chunkExists(cPos: Pair<Int, Int>): Boolean {
+        return _chunks.containsKey(cPos)
+    }
+
+    fun addChunk(cPos: Pair<Int, Int>): Chunk {
+        _chunks[cPos] = Chunk(this, cPos.first, cPos.second)
+        return _chunks[cPos]!!
+    }
+
+    fun tick() {
+        _chunks.forEach { (_, c) ->
+            c.tick(this)
+        }
     }
 }

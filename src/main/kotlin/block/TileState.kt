@@ -13,4 +13,6 @@ class TileState(var block: Block) {
         }
         return false
     }
+
+    fun getEmittance(): Float = block.getEmittance()
 }

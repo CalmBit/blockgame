@@ -16,8 +16,8 @@ class TreeDecorator(val log: TileState, val leaves: TileState, val chances: Int,
                     + (world.random.nextInt(Int.MAX_VALUE) * cZ) xor world.getSeed().inv()
         )
         for (c in 0 until chances) {
-            var x = world.random.nextInt(-8, 8)
-            var z = +world.random.nextInt(-8, 8)
+            var x = world.random.nextInt(8, 16)
+            var z = world.random.nextInt(8, 16)
             var y = 0
             try {
                 y = world.getTopTilePosAdjusted(cX, cZ, x, z)
@@ -25,6 +25,7 @@ class TreeDecorator(val log: TileState, val leaves: TileState, val chances: Int,
                 continue
             }
 
+            // TODO: Change cX/cZ if the tree goes out of bounds
             if (stayPredicate(world.getTileAtAdjusted(cX, cZ, x, y, z)!!)) continue
             var height = world.random.nextInt(6, 9)
             for (i in 1..height) {

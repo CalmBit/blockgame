@@ -23,11 +23,15 @@ class Window {
     var uniTrans = 0
     var uniView = 0
     var uniProj = 0
+    var uniFog = 0
     var timer = 0.0f
     var frames = 0
+    var ticks = 0
     var fps = 0
+    var tps = 0
     var renderDistance = 128.0f
     var lastFs: Instant = Instant.EPOCH
+    var lastTick: Instant = Instant.EPOCH
     var tex: Texture? = null
     var tex2: Texture? = null
     var ctex: Texture? = null
@@ -180,8 +184,11 @@ class Window {
         uniTrans = glGetUniformLocation(prog!!.program, "model")
         uniView = glGetUniformLocation(prog!!.program, "view")
         uniProj = glGetUniformLocation(prog!!.program, "proj")
+        uniFog = glGetUniformLocation(prog!!.program, "fogColor")
 
         world = World(_window, prog!!)
+
+        PlaneRenderer.setColors(world!!.worldType)
     }
 
     private suspend fun loop() {
@@ -191,7 +198,8 @@ class Window {
         if(lastFs == Instant.EPOCH) {
             lastFs = Instant.now()
         }
-        glClearColor(0.529f, 0.808f, 0.980f, 1.0f)
+        val atmocolor = world!!.worldType.atmoColor
+        glClearColor(atmocolor.x, atmocolor.y, atmocolor.z, 1.0f)
 
 
         while (!glfwWindowShouldClose(_window)) {
@@ -218,13 +226,16 @@ class Window {
                 tex!!.use()
             }
 
-            FontRenderer.renderWithShadow(4.0f, 0.0f, "BlockGame v.Alpha 06132019 (FPS: $fps)\nPosition: ${pos.toString(DecimalFormat("0.000"))}", 1.5f)
-            if(world!!.renderChunkQueue.size > 0) {
-                FontRenderer.renderWithShadow(4.0f, FontRenderer.font.height * 3.0f + 1.5f, "Generating Chunks: ${world!!.generateChunkQueue.size}", 1.5f)
-                FontRenderer.renderWithShadow(4.0f, FontRenderer.font.height * 4.5f + 1.5f, "Rendering Chunks: ${world!!.renderChunkQueue.size}", 1.5f)
-                FontRenderer.renderWithShadow(4.0f, FontRenderer.font.height * 6.0f + 1.5f, "Binding Chunks: ${world!!.bindChunkQueue.size}", 1.5f)
+            if(Duration.between(lastTick, Instant.now()).toMillis() >= 50) {
+                world!!.tick()
+                lastTick = Instant.now()
+                ticks++
             }
-            FontRenderer.renderWithShadow(4.0f, FontRenderer.font.height * (7.5f) + 1.5f, "Memory: ${(runtime.totalMemory() - runtime.freeMemory())/(1024*1024)}MB/${runtime.totalMemory()/(1024*1024)}MB", 1.5f)
+
+            FontRenderer.renderWithShadow(4.0f, 0.0f, "BlockGame v.Alpha 06132019 (FPS: $fps / TPS: $tps)", 1.5f)
+            FontRenderer.renderWithShadow(4.0f, FontRenderer.font.height * 1.5f + 1.5f, "Position: ${pos.toString(DecimalFormat("0.000"))} (Chunk: ${pos.x.toInt() shr 4}, ${pos.z.toInt() shr 4})", 1.5f)
+            FontRenderer.renderWithShadow(4.0f, FontRenderer.font.height * 3.0f + 1.5f, "G: ${world!!.generateChunkQueue.size} / D: ${world!!.decorateChunkQueue.size} / R: ${world!!.renderChunkQueue.size} / B: ${world!!.bindChunkQueue.size}", 1.5f)
+            FontRenderer.renderWithShadow(4.0f, FontRenderer.font.height * (4.5f) + 1.5f, "Memory: ${(runtime.totalMemory() - runtime.freeMemory())/(1024*1024)}MB/${runtime.totalMemory()/(1024*1024)}MB", 1.5f)
 
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
@@ -245,6 +256,7 @@ class Window {
                 stack = MemoryStack.stackPush()
                 glUniformMatrix4fv(uniView, false, view.get(stack.mallocFloat(16)))
                 glUniformMatrix4fv(uniProj, false, proj.get(stack.mallocFloat(16)))
+                glUniform3fv(uniFog, atmocolor.get(stack.mallocFloat(3)))
             } finally {
                 stack?.pop()
             }
@@ -276,10 +288,23 @@ class Window {
                 }
             }
 
+            if(!world!!.chunkExists(Pair(pos.x.toInt() shr 4, pos.z.toInt() shr 4))) {
+                world!!.lazyChunkQueue.offer(Pair(pos.x.toInt() shr 4, pos.z.toInt() shr 4))
+            }
+
+            if(world!!.lazyChunkQueue.size > 0) {
+                while(world!!.lazyChunkQueue.size > 0) {
+                    var cPos = world!!.lazyChunkQueue.remove()
+                    world!!.generateChunkQueue.offer(world!!.addChunk(cPos))
+                }
+            }
+
             frames++
             if(Duration.between(lastFs, Instant.now()).seconds >= 1) {
                 fps = frames
+                tps = ticks
                 frames = 0
+                ticks = 0
                 lastFs = Instant.now()
             }
 

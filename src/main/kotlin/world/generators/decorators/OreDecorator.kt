@@ -14,9 +14,9 @@ class OreDecorator(val ore: TileState, val chances: Int, val minY: Int, val maxY
                 + (world.random.nextInt(Int.MAX_VALUE) * cX)
                 + (world.random.nextInt(Int.MAX_VALUE) * cZ) xor world.getSeed())
         for (c in 0 until chances) {
-            var x = world.random.nextInt(0, 16)
+            var x = world.random.nextInt(8, 16)
             var y = world.random.nextInt(0, 128)
-            var z = +world.random.nextInt(0, 16)
+            var z = +world.random.nextInt(8, 16)
 
             if(y < minY || y > maxY) continue
 
@@ -39,18 +39,9 @@ class OreDecorator(val ore: TileState, val chances: Int, val minY: Int, val maxY
                 var dY = world.random.nextInt(-1, 2)
                 var dZ = world.random.nextInt(-1, 2)
 
-                if (x + dX < 0 || x + dX > 15) {
-                    dX = 0
-                }
-
                 if (y + dY < 0 || y + dY > 128  || y + dY < minY || y + dY > maxY) {
                     dY = 0
                 }
-
-                if (z + dZ < 0 || z + dZ > 15) {
-                    dZ = 0
-                }
-
 
                 if (!replacePredicate(world.getTileAtAdjusted(cX, cZ, x + dX, y +dY, z + dZ)!!)) {
                     dX = 0

@@ -43,7 +43,7 @@ open class Block(private var _name: RegistryName) : IRegistryEntry {
         if(other != null) {
             return !other.shouldRender() || (!other.isOpaque() && this.isOpaque())
         }
-        return false
+        return true
     }
 
     open fun shouldRender(): Boolean = true
@@ -57,6 +57,14 @@ open class Block(private var _name: RegistryName) : IRegistryEntry {
     }
 
     open fun postRender() {
+
+    }
+
+    open fun getEmittance(): Float {
+        return 0.0f
+    }
+
+    open fun tick(world: World, rX: Int, rY: Int, rZ: Int, x: Int, y: Int, z: Int) {
 
     }
 }

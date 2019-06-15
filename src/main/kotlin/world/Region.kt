@@ -9,6 +9,7 @@ import org.joml.Matrix4f
 import org.lwjgl.opengl.GL31.*
 import org.lwjgl.system.MemoryStack
 import render.ShapeHelper
+import kotlin.random.Random
 
 
 class Region(val rX: Int, val rY: Int, val rZ: Int) {
@@ -89,5 +90,16 @@ class Region(val rX: Int, val rY: Int, val rZ: Int) {
         var texAttrib = glGetAttribLocation(prog.program, "texcoord")
         glEnableVertexAttribArray(texAttrib)
         glVertexAttribPointer(texAttrib, 2, GL_FLOAT, false, 8*4, 6*4L)
+    }
+
+    fun tick(world: World) {
+        for(i in 0 until 3) {
+            var x = Random.nextInt(0, 16)
+            var y = Random.nextInt(0, 16)
+            var z = Random.nextInt(0, 16)
+
+            var t = getTileAt(x, y, z)
+            t!!.block.tick(world, rX, rY, rZ, x, y, z)
+        }
     }
 }

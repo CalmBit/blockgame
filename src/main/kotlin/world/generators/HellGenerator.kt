@@ -12,7 +12,7 @@ import world.generators.decorators.OreDecorator
 import world.generators.decorators.TreeDecorator
 
 
-class HellGenerator {
+class HellGenerator : IGenerator {
 
     companion object {
         var _decorators : MutableList<IDecorator> = mutableListOf()
@@ -28,7 +28,7 @@ class HellGenerator {
         }
     }
 
-    fun generate(world: World, cX: Int, cZ: Int) {
+    override fun generate(world: World, cX: Int, cZ: Int) {
         for (x in 0..15) {
             for (z in 0..15) {
                 for (y in 0..127) {
@@ -50,16 +50,19 @@ class HellGenerator {
                             when (y) {
                                 in 49..127 -> tile
                                 in height..48 -> TileState(BlockRegistration.LAVA)
-                                in height-5 until height -> TileState(BlockRegistration.GRAVEL)
+                                in height-5 until height -> TileState(BlockRegistration.LAVA_OBSIDIAN)
                                 else -> TileState(BlockRegistration.STONE)
                             }
                     } else {
                         tile =
                             when (y) {
                                 in height + 1..127 -> tile
-                                height -> if(sandy) TileState(BlockRegistration.GRAVEL) else TileState(BlockRegistration.DIRT)
-                                in height - 5 until height -> if(sandy) TileState(BlockRegistration.GRAVEL) else TileState(
-                                    BlockRegistration.DIRT)
+                                height -> if(height in 48..49) TileState((BlockRegistration.LAVA_OBSIDIAN))
+                                    else if(sandy) TileState(BlockRegistration.OBSIDIAN)
+                                    else TileState(BlockRegistration.DIRT)
+                                in height - 5 until height -> if(y in 48..49) TileState((BlockRegistration.LAVA_OBSIDIAN))
+                                    else if(sandy) TileState(BlockRegistration.OBSIDIAN)
+                                    else TileState(BlockRegistration.DIRT)
                                 else -> {
                                     TileState(BlockRegistration.STONE)
                                 }
@@ -70,14 +73,16 @@ class HellGenerator {
             }
         }
 
-        for (d in _decorators) {
-            d.decorate(world, cX, cZ)
-        }
-
         for (x in 0..15) {
             for (z in 0..15) {
                 world.setTileAtAdjusted(cX, cZ, x, 0, z, TilePalette.getTileRepresentation(TileState(BlockRegistration.BORDERSTONE)))
             }
+        }
+    }
+
+    override fun decorate(world: World, cX: Int, cZ: Int) {
+        for (d in _decorators) {
+            d.decorate(world, cX, cZ)
         }
     }
 }

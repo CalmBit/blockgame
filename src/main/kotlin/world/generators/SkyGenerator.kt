@@ -12,7 +12,7 @@ import world.generators.decorators.OreDecorator
 import world.generators.decorators.TreeDecorator
 
 
-class SkyGenerator {
+class SkyGenerator : IGenerator {
 
     companion object {
         var _decorators : MutableList<IDecorator> = mutableListOf()
@@ -28,7 +28,7 @@ class SkyGenerator {
         }
     }
 
-    fun generate(world: World, cX: Int, cZ: Int) {
+    override fun generate(world: World, cX: Int, cZ: Int) {
         for (x in 0..15) {
             for (z in 0..15) {
                 for (y in 0..127) {
@@ -63,15 +63,11 @@ class SkyGenerator {
                 }
             }
         }
+    }
 
+    override fun decorate(world: World, cX: Int, cZ: Int) {
         for (d in _decorators) {
             d.decorate(world, cX, cZ)
         }
-
-        /*for (x in 0..15) {
-            for (z in 0..15) {
-                world.setTileAt((cX*16)+x, 0, (cZ*16)+z, TileState(BlockRegistration.BORDERSTONE))
-            }
-        }*/
     }
 }

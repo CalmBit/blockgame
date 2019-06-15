@@ -1,10 +1,8 @@
 package gl
 
-import org.lwjgl.opengl.GL11
 import org.lwjgl.opengl.GL31.*
 import org.lwjgl.stb.STBImage.*
 import org.lwjgl.system.MemoryStack
-import java.lang.RuntimeException
 import java.nio.ByteBuffer
 
 class Texture(file: String) {

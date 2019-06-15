@@ -8,7 +8,7 @@ object BlockRegistration {
     var blockRegistry = Registry<Block>()
 
     val AIR = register(BlockAir())
-    val DIRT = register(Block(RegistryName("blockgame", "dirt")).setUV(UVPair(0, 0)))
+    val DIRT = register(BlockDirt(RegistryName("blockgame", "dirt")).setUV(UVPair(0, 0)))
     val GRASS = register(BlockGrass(RegistryName("blockgame", "grass")))
     var STONE = register(Block(RegistryName("blockgame", "stone")).setUV(UVPair(3, 0)))
     var GRAVEL = register(Block(RegistryName("blockgame", "gravel")).setUV(UVPair(4, 0)))
@@ -25,6 +25,13 @@ object BlockRegistration {
     var LEAVES = register(BlockLeaves(RegistryName("blockgame", "leaves")).setUV(UVPair(0, 1)))
     var GLASS = register(BlockGlass(RegistryName("blockgame", "glass")).setUV(UVPair(1,1)))
     var BORDERSTONE = register(Block(RegistryName("blockgame", "borderstone")).setUV(UVPair(2,1)))
+    var COBBLESTONE = register(Block(RegistryName("blockgame", "cobblestone")).setUV(UVPair(3, 1)))
+    var MOSS_COBBLE = register(Block(RegistryName("blockgame", "moss_cobblestone")).setUV(UVPair(4, 1)))
+    val OBSIDIAN = register(Block(RegistryName("blockgame", "obsidian")).setUV(UVPair(8, 1)))
+    val LAVA_OBSIDIAN = register(BlockMagmaObsidian()).setUV(UVPair(9, 1))
+
+    var UVTEST = register(Block(RegistryName("blockgame", "uvtest")).setUV(UVPair(14, 15)))
+
 
     fun register(block: Block): Block = blockRegistry.register(block)
 }

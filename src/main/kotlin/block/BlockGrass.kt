@@ -2,6 +2,7 @@ package block
 
 import gl.UVPair
 import registry.RegistryName
+import world.World
 
 class BlockGrass(_name: RegistryName) : Block(_name) {
     companion object {

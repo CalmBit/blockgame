@@ -1,5 +1,0 @@
-package worker
-
-object WorkerPool {
-    
-}

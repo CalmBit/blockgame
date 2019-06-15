@@ -12,7 +12,7 @@ import world.generators.decorators.OreDecorator
 import world.generators.decorators.TreeDecorator
 
 
-class DefaultGenerator {
+class DefaultGenerator : IGenerator {
 
     companion object {
         var _decorators : MutableList<IDecorator> = mutableListOf()
@@ -28,7 +28,7 @@ class DefaultGenerator {
         }
     }
 
-    fun generate(world: World, cX: Int, cZ: Int) {
+    override fun generate(world: World, cX: Int, cZ: Int) {
         for (x in 0..15) {
             for (z in 0..15) {
                 for (y in 0..127) {
@@ -57,7 +57,7 @@ class DefaultGenerator {
                         tile =
                             when (y) {
                                 in height + 1..127 -> tile
-                                height -> if(sandy) TileState(BlockRegistration.SAND) else TileState(BlockRegistration.GRASS)
+                                height -> if(sandy) TileState(BlockRegistration.SAND) else TileState(BlockRegistration.DIRT)
                                 in height - 5 until height -> if(sandy) TileState(BlockRegistration.SAND) else TileState(
                                     BlockRegistration.DIRT)
                                 else -> {
@@ -70,14 +70,16 @@ class DefaultGenerator {
             }
         }
 
-        for (d in _decorators) {
-            d.decorate(world, cX, cZ)
-        }
-
         for (x in 0..15) {
             for (z in 0..15) {
                 world.setTileAtAdjusted(cX, cZ, x, 0, z, TilePalette.getTileRepresentation(TileState(BlockRegistration.BORDERSTONE)))
             }
+        }
+    }
+
+    override fun decorate(world: World, cX: Int, cZ: Int) {
+        for (d in _decorators) {
+            d.decorate(world, cX, cZ)
         }
     }
 }

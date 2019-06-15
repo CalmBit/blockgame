@@ -6,8 +6,10 @@ import gl.VertexShader
 import org.joml.Math
 import org.joml.Matrix4f
 import org.joml.Vector3f
+import org.lwjgl.opengl.GL20
 import org.lwjgl.opengl.GL31.*
 import org.lwjgl.system.MemoryStack
+import world.WorldType
 
 object PlaneRenderer {
     var vao: Int = 0
@@ -21,10 +23,12 @@ object PlaneRenderer {
     var planeTrans: Int
     var planeView: Int
     var planeProj: Int
+    var planeFog: Int
     var planeColor: Int
 
-    val SKY_PLANE: Vector3f = Vector3f(0.000f, 0.749f, 1.000f)
-    val VOID_PLANE: Vector3f = Vector3f(0.118f, 0.565f, 1.000f)
+    var ATMOS_COLOR: Vector3f = Vector3f()
+    var SKY_PLANE: Vector3f = Vector3f(0.000f, 0.749f, 1.000f)
+    var VOID_PLANE: Vector3f = Vector3f(0.118f, 0.565f, 1.000f)
     val DARK_PLANE: Vector3f = Vector3f()
 
     init {
@@ -32,6 +36,7 @@ object PlaneRenderer {
         glBindVertexArray(vao)
         vbo = glGenBuffers()
         glBindBuffer(GL_ARRAY_BUFFER, vbo)
+
         renderPlane(16.0f)
         renderPlane(-16.0f)
 
@@ -45,10 +50,17 @@ object PlaneRenderer {
         planeView = glGetUniformLocation(planeShader.program, "view")
         planeProj = glGetUniformLocation(planeShader.program, "proj")
         planeColor = glGetUniformLocation(planeShader.program, "color")
+        planeFog = glGetUniformLocation(planeShader.program, "fogColor")
 
         var posAttrib = glGetAttribLocation(planeShader.program, "position")
         glEnableVertexAttribArray(posAttrib)
         glVertexAttribPointer(posAttrib, 3, GL_FLOAT, false, 3*4, 0L)
+    }
+
+    fun setColors(type: WorldType) {
+        ATMOS_COLOR = type.atmoColor
+        SKY_PLANE = type.skyColor
+        VOID_PLANE = type.voidColor
     }
 
     fun renderPlane(y: Float) {
@@ -97,6 +109,7 @@ object PlaneRenderer {
             glUniformMatrix4fv(planeView, false, view.get(stack.mallocFloat(16)))
             glUniformMatrix4fv(planeProj, false, proj.get(stack.mallocFloat(16)))
             glUniform3fv(planeColor, SKY_PLANE.get(stack.mallocFloat(3)))
+            glUniform3fv(planeFog, ATMOS_COLOR.get(stack.mallocFloat(3)))
             glDrawArrays(GL_TRIANGLES, 0, quads/2)
             if(pos.y < 62) {
                 glUniform3fv(planeColor, DARK_PLANE.get(stack.mallocFloat(3)))
