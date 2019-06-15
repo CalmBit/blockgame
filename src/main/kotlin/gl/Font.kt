@@ -13,10 +13,12 @@ class Font(file: String) {
     var fontTable =
         "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.,;:?!-_~#\"'&()[]"//{}^|`/\\@°+=*%€\$£¢<>©®ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØŒÙÚÛÜÝÞàáâãäåæçèéêëìíîïðñòóôõöøœùúûüýþßÿ¿¡"
     var uvTable: Array<Float> = Array(fontTable.length * 4) { 0.0f }
-    var currentU: Float = 0.0f
+    //var currentU: Float = 0.0f
     //var fontWidths = Array(fontTable.length) { 0 }
 
     var fontWidth = 8
+    var vOffset: Float
+    var uOffset: Float
     val u: Float
 
     init {
@@ -36,6 +38,8 @@ class Font(file: String) {
                 ?: throw RuntimeException("Unable to load " + file + "\n" + STBImage.stbi_failure_reason())
             width = w.get(0)
             height = h.get(0)
+            vOffset = 1.0f/(height.toFloat()*8.0f)
+            uOffset = 1.0f/(width.toFloat()*8.0f)
         } finally {
             stack?.pop()
         }
@@ -60,10 +64,10 @@ class Font(file: String) {
         var lWidth = 0
         if (img != null) {
             for(currentLetter in 0 until fontTable.length) {
-                uvTable[currentLetter * 4] = (currentLetter.toFloat()*u)// + uOffset
-                uvTable[currentLetter * 4 + 1] = 0.0f
-                uvTable[currentLetter * 4 + 2] = (currentLetter.toFloat()*u) + u//  - uOffset
-                uvTable[currentLetter * 4 + 3] = 1.0f
+                uvTable[currentLetter * 4] = (currentLetter.toFloat()*u) + uOffset
+                uvTable[currentLetter * 4 + 1] = vOffset
+                uvTable[currentLetter * 4 + 2] = (currentLetter.toFloat()*u) + u  - uOffset
+                uvTable[currentLetter * 4 + 3] = 1.0f - vOffset
             }
             /*for (x in 0 until width) {
                 var empty = true
