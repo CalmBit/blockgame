@@ -42,6 +42,8 @@ class Window {
     var prog: ShaderProgram? = null
     var wWidth = 800.0f
     var wHeight = 600.0f
+    var fWidth = 800
+    var fHeight = 600
     var texUse = true
 
     var focused = true
@@ -102,17 +104,17 @@ class Window {
                 texUse = !texUse
             }
             else if(key == GLFW_KEY_F2 && action == GLFW_RELEASE) {
-                var b = BufferUtils.createByteBuffer(wWidth.toInt()*wHeight.toInt()*3*4)
-                var t = BufferUtils.createByteBuffer(wWidth.toInt()*wHeight.toInt()*3*4)
-                glReadPixels(0,0,wWidth.toInt()*2,wHeight.toInt()*2,GL_RGB, GL_UNSIGNED_BYTE, b)
-                for(i in 0 until 600*2) {
-                    for(j in 0 until 800*2) {
-                        t.put((((600*2)-i-1) * (800*2) * 3)+(j*3), b.get((i*(800*2) * 3)+(j*3)))
-                        t.put((((600*2)-i-1) * (800*2) * 3)+(j*3)+1, b.get((i*(800*2) * 3)+(j*3)+1))
-                        t.put((((600*2)-i-1) * (800*2) * 3)+(j*3)+2, b.get((i*(800*2) * 3)+(j*3)+2))
+                var b = BufferUtils.createByteBuffer(fWidth*fHeight*3)
+                var t = BufferUtils.createByteBuffer(fWidth*fHeight*3)
+                glReadPixels(0,0,fWidth, fHeight,GL_RGB, GL_UNSIGNED_BYTE, b)
+                for(i in 0 until fHeight) {
+                    for(j in 0 until fWidth) {
+                        t.put(((fHeight-i-1) * fWidth * 3)+(j*3), b.get((i*fWidth * 3)+(j*3)))
+                        t.put(((fHeight-i-1) * fWidth * 3)+(j*3)+1, b.get((i*fWidth * 3)+(j*3)+1))
+                        t.put(((fHeight-i-1) * fWidth * 3)+(j*3)+2, b.get((i*fWidth * 3)+(j*3)+2))
                     }
                 }
-                STBImageWrite.stbi_write_png("test.png", wWidth.toInt()*2, wHeight.toInt()*2, 3, t, 0)
+                STBImageWrite.stbi_write_png("test.png", fWidth, fHeight, 3, t, 0)
                 Logger.logger.info("saved test.png")
             }
             else {
@@ -163,16 +165,33 @@ class Window {
             wHeight = height.toFloat()
         }
 
+        glfwSetFramebufferSizeCallback(_window) {window: Long, width: Int, height: Int ->
+            fWidth = width
+            fHeight = height
+        }
+
 
         var stack: MemoryStack? = null
         try {
             stack = MemoryStack.stackPush()
             val pWidth = stack.mallocInt(1)
             val pHeight = stack.mallocInt(1)
+            var pFWidth = stack.mallocInt(1)
+            var pFHeight = stack.mallocInt(1)
+
             glfwGetWindowSize(_window, pWidth, pHeight)
+            glfwGetFramebufferSize(_window, pFWidth, pFHeight)
+
+            wWidth = pWidth.get(0).toFloat()
+            wHeight = pHeight.get(0).toFloat()
+
+            fWidth = pFWidth.get(0)
+            fHeight = pFHeight.get(0)
+
             val vidMode = glfwGetVideoMode(glfwGetPrimaryMonitor())
-            glfwSetWindowPos(_window, (vidMode!!.width() - pWidth.get(0)) / 2,
-                (vidMode.height() - pHeight.get(0)) / 2)
+            glfwSetWindowPos(_window, (vidMode!!.width() - wWidth.toInt()) / 2,
+                (vidMode.height() - wHeight.toInt()) / 2)
+
         } finally {
             stack?.pop()
         }
