@@ -14,8 +14,6 @@ class Font(file: String) {
     var fontTable =
         "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.,;:?!-_~#\"'&()[]"//{}^|`/\\@°+=*%€\$£¢<>©®ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØŒÙÚÛÜÝÞàáâãäåæçèéêëìíîïðñòóôõöøœùúûüýþßÿ¿¡"
     var uvTable: Array<Float> = Array(fontTable.length * 4) { 0.0f }
-    //var currentU: Float = 0.0f
-    //var fontWidths = Array(fontTable.length) { 0 }
 
     var fontWidth = 8
     var vOffset: Float
@@ -74,29 +72,6 @@ class Font(file: String) {
                 uvTable[currentLetter * 4 + 2] = (currentLetter.toFloat()*u) + u  - uOffset
                 uvTable[currentLetter * 4 + 3] = 1.0f - vOffset
             }
-            /*for (x in 0 until width) {
-                var empty = true
-                for (y in 0 until height) {
-                    a = img[(y * width * 4) + (x * 4) + 3]
-
-                    if (a != nil) {
-                        lWidth++
-                        empty = false
-                        break
-                    }
-                }
-                if (empty) {
-                    fontWidths[currentLetter] = lWidth
-                    uvTable[currentLetter * 4] = currentU + uOffset
-                    uvTable[currentLetter * 4 + 1] = 0.0f + vOffset
-                    uvTable[currentLetter * 4 + 2] = currentU + (lWidth.toFloat() * (1.0f / width)) - uOffset
-                    uvTable[currentLetter * 4 + 3] = 1.0f - vOffset
-                    currentU += (lWidth + 1).toFloat() * (1.0f / width)
-
-                    lWidth = 0
-                    currentLetter++
-                }
-            }*/
         }
         STBImage.stbi_image_free(img)
         glBindTexture(GL_TEXTURE_2D, 0)
@@ -120,6 +95,6 @@ class Font(file: String) {
         if (c == ' ') {
             return 4
         }
-        return fontWidth //fontWidths[fontTable.indexOf(c)]
+        return fontWidth
     }
 }

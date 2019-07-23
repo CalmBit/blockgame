@@ -1,3 +1,4 @@
+import client.Camera
 import gl.*
 import kotlinx.coroutines.runBlocking
 import org.joml.Math
@@ -17,6 +18,7 @@ import render.GuiRenderer
 import render.PlaneRenderer
 import world.World
 import java.text.DecimalFormat
+import java.text.SimpleDateFormat
 import java.time.Duration
 import java.time.Instant
 import java.util.*
@@ -48,17 +50,12 @@ class Window {
 
     var focused = true
 
-    var mlastX = 400.0
-    var mlastY = 300.0
-
-    var yaw = 0.0
-    var pitch = 0.0
-
-    var pos = Vector3f(16.0f, 84.0f, 16.0f)
-    var front = Vector3f(0.0f, 0.0f, 32.0f)
+    var camera = Camera()
 
     var view = Matrix4f()
     var proj = Matrix4f()
+
+    val filedf = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS")
 
     var keyStates: Array<Boolean> = Array(GLFW_KEY_LAST+1) {false}
 
@@ -88,7 +85,7 @@ class Window {
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE)
         glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE)
 
-        _window = glfwCreateWindow(800, 600, "Hello, world!", NULL, NULL)
+        _window = glfwCreateWindow(800, 600, "BlockGame", NULL, NULL)
         if (_window == NULL)
             throw RuntimeException("Failed to create Window")
 
@@ -107,6 +104,7 @@ class Window {
                 var b = BufferUtils.createByteBuffer(fWidth*fHeight*3)
                 var t = BufferUtils.createByteBuffer(fWidth*fHeight*3)
                 glReadPixels(0,0,fWidth, fHeight,GL_RGB, GL_UNSIGNED_BYTE, b)
+                // who woulda thought that images are hard
                 for(i in 0 until fHeight) {
                     for(j in 0 until fWidth) {
                         t.put(((fHeight-i-1) * fWidth * 3)+(j*3), b.get((i*fWidth * 3)+(j*3)))
@@ -114,8 +112,11 @@ class Window {
                         t.put(((fHeight-i-1) * fWidth * 3)+(j*3)+2, b.get((i*fWidth * 3)+(j*3)+2))
                     }
                 }
-                STBImageWrite.stbi_write_png("test.png", fWidth, fHeight, 3, t, 0)
-                Logger.logger.info("saved test.png")
+
+                val filename = "${filedf.format(Date())}.png"
+
+                STBImageWrite.stbi_write_png(filename, fWidth, fHeight, 3, t, 0)
+                Logger.logger.info("saved filename")
             }
             else {
                 if(key > 0)
@@ -134,29 +135,7 @@ class Window {
 
         glfwSetCursorPosCallback(_window) {window :Long, xPos: Double, yPos: Double ->
             if(focused) {
-                var xOffset = xPos - mlastX
-                var yOffset = yPos - mlastY
-                mlastX = xPos
-                mlastY = yPos
-
-                val sensitivity = 0.05
-                xOffset *= sensitivity
-                yOffset *= sensitivity
-
-                yaw += xOffset
-                pitch -= yOffset
-
-                if (pitch > 89.0)
-                    pitch = 89.0
-                if (pitch < -89.0)
-                    pitch = -89.0
-
-                var f = Vector3f()
-
-                f.x = (Math.cos(Math.toRadians(pitch)) * Math.cos(Math.toRadians(yaw))).toFloat()
-                f.y = (Math.sin(Math.toRadians(pitch))).toFloat()
-                f.z = (Math.cos(Math.toRadians(pitch)) * Math.sin(Math.toRadians(yaw))).toFloat()
-                front = f.normalize()
+                camera.updateCameraRotation(xPos, yPos)
             }
         }
 
@@ -245,16 +224,7 @@ class Window {
             timer += 0.01f
 
             if(focused) {
-                if (keyStates[GLFW_KEY_W]) pos.add(Vector3f(front.x * 0.5f, front.y * 0.5f, front.z * 0.5f))
-                if (keyStates[GLFW_KEY_S]) pos.sub(Vector3f(front.x * 0.5f, front.y * 0.5f, front.z * 0.5f))
-                if (keyStates[GLFW_KEY_A]) pos.sub(
-                    Vector3f(front.x, front.y, front.z)
-                        .cross(Vector3f(0.0f, 1.0f, 0.0f).div(2.0f))
-                )
-                if (keyStates[GLFW_KEY_D]) pos.add(
-                    Vector3f(front.x, front.y, front.z)
-                        .cross(Vector3f(0.0f, 1.0f, 0.0f).div(2.0f))
-                )
+                camera.updatePosition(keyStates)
             }
 
             if(!texUse) {
@@ -269,22 +239,16 @@ class Window {
                 ticks++
             }
 
-                FontRenderer.renderWithShadow(4.0f, 2.0f, "BlockGame v.Alpha 06132019 (FPS: $fps / TPS: $tps)", 1.0f)
-                FontRenderer.renderWithShadow(4.0f, FontRenderer.font.height * 1.0f + 2.0f, "Position: ${pos.toString(DecimalFormat("0.000"))} (Chunk: ${pos.x.toInt() shr 4}, ${pos.z.toInt() shr 4})", 1.0f)
-                FontRenderer.renderWithShadow(4.0f, FontRenderer.font.height * 2.0f + 2.0f, "G: ${world!!.generateChunkQueue.size} / D: ${world!!.decorateChunkQueue.size} / R: ${world!!.renderChunkQueue.size} / B: ${world!!.bindChunkQueue.size}", 1.0f)
-                FontRenderer.renderWithShadow(4.0f, FontRenderer.font.height * 3.0f + 2.0f, "Memory: ${(runtime.totalMemory() - runtime.freeMemory())/(1024*1024)}MB/${runtime.totalMemory()/(1024*1024)}MB", 1.0f)
-
+            FontRenderer.renderWithShadow(4.0f, 2.0f, "BlockGame v.Alpha 06132019 (FPS: $fps / TPS: $tps)", 1.0f)
+            FontRenderer.renderWithShadow(4.0f, FontRenderer.font.height * 1.0f + 2.0f, "Position: ${camera.pos.toString(DecimalFormat("0.000"))} (Chunk: ${camera.pos.x.toInt() shr 4}, ${camera.pos.z.toInt() shr 4})", 1.0f)
+            FontRenderer.renderWithShadow(4.0f, FontRenderer.font.height * 2.0f + 2.0f, "G: ${world!!.generateChunkQueue.size} / D: ${world!!.decorateChunkQueue.size} / R: ${world!!.renderChunkQueue.size} / B: ${world!!.bindChunkQueue.size}", 1.0f)
+            FontRenderer.renderWithShadow(4.0f, FontRenderer.font.height * 3.0f + 2.0f, "Memory: ${(runtime.totalMemory() - runtime.freeMemory())/(1024*1024)}MB/${runtime.totalMemory()/(1024*1024)}MB", 1.0f)
+            FontRenderer.renderWithShadow(4.0f, FontRenderer.font.height * 4.0f + 2.0f, "Seed: ${world!!.getSeed()}", 1.0f)
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
-            view = Matrix4f()
-                .lookAt(
-                    pos,
-                    Vector3f(pos.x + front.x, pos.y + front.y, pos.z + front.z),
-                    Vector3f(0.0f,1.0f,0.0f))
-            proj = Matrix4f()
-                .perspective(Math.toRadians(90.0).toFloat(),800.0f/600.0f,1.0f,renderDistance)
+            var (view, proj) = camera.generateViewProj(renderDistance)
 
-            PlaneRenderer.draw(view, proj ,pos, pitch, yaw)
+            PlaneRenderer.draw(view, proj, camera.pos, camera.pitch, camera.yaw)
 
             prog!!.use()
 
@@ -325,8 +289,8 @@ class Window {
                 }
             }
 
-            if(!world!!.chunkExists(Pair(pos.x.toInt() shr 4, pos.z.toInt() shr 4))) {
-                world!!.lazyChunkQueue.offer(Pair(pos.x.toInt() shr 4, pos.z.toInt() shr 4))
+            if(!world!!.chunkExists(Pair(camera.pos.x.toInt() shr 4, camera.pos.z.toInt() shr 4))) {
+                world!!.lazyChunkQueue.offer(Pair(camera.pos.x.toInt() shr 4, camera.pos.z.toInt() shr 4))
             }
 
             if(world!!.lazyChunkQueue.size > 0) {
