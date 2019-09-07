@@ -1,9 +1,7 @@
 import client.Camera
 import gl.*
 import kotlinx.coroutines.runBlocking
-import org.joml.Math
 import org.joml.Matrix4f
-import org.joml.Vector3f
 import org.lwjgl.BufferUtils
 import org.lwjgl.glfw.Callbacks.glfwFreeCallbacks
 import org.lwjgl.glfw.GLFW.*
@@ -17,6 +15,7 @@ import render.FontRenderer
 import render.GuiRenderer
 import render.PlaneRenderer
 import world.World
+import java.io.File
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.time.Duration
@@ -185,14 +184,14 @@ class Window {
         glEnable(GL_CULL_FACE)
         glEnable(GL_BLEND)
 
-        tex = Texture("texture/terrain.png")
-        tex2 = Texture("texture/terrain2.png")
-        ctex = Texture("texture/crosshair.png")
+        tex = Texture(File("texture", "terrain.png"))
+        tex2 = Texture(File("texture", "terrain2.png"))
+        ctex = Texture(File("texture", "crosshair.png"))
 
         tex!!.use()
 
-        var vert = VertexShader("shader/test.vert")
-        var frag = FragmentShader("shader/test.frag")
+        var vert = VertexShader(File("shader", "test.vert"))
+        var frag = FragmentShader(File("shader", "test.frag"))
         prog = ShaderProgram(vert, frag)
 
         prog!!.use()

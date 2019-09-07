@@ -7,7 +7,7 @@ import java.io.File
 import java.lang.RuntimeException
 import java.nio.ByteBuffer
 
-class Font(file: String) {
+class Font(file: File) {
     var tex: Int = glGenTextures()
     var width: Int
     var height: Int
@@ -28,16 +28,13 @@ class Font(file: String) {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
         var stack: MemoryStack? = null
         var img: ByteBuffer? = null
-        var fileName = file
-        if(File.separator != "/") {
-            fileName = file.replace("/", "\\")
-        }
+        var fileName = File(javaClass.classLoader.getResource("").path, file.path).absolutePath
         try {
             stack = MemoryStack.stackPush()
             var w = stack.mallocInt(1)
             var h = stack.mallocInt(1)
             var chan = stack.mallocInt(1)
-            img = STBImage.stbi_load(javaClass.classLoader.getResource(file).path, w, h, chan, 4)
+            img = STBImage.stbi_load(fileName, w, h, chan, 4)
                 ?: throw RuntimeException("Unable to load " + file + "\n" + STBImage.stbi_failure_reason())
             width = w.get(0)
             height = h.get(0)

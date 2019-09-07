@@ -17,7 +17,6 @@ if(Os.isFamily(Os.FAMILY_MAC))
 if(Os.isFamily(Os.FAMILY_WINDOWS))
     project.ext.lwjglNatives = "natives-windows"
 
-
 repositories {
     mavenCentral()
     maven {
@@ -51,7 +50,9 @@ dependencies {
     runtimeOnly "org.lwjgl:lwjgl-opus:$lwjglVersion:$lwjglNatives"
     runtimeOnly "org.lwjgl:lwjgl-par:$lwjglVersion:$lwjglNatives"
     runtimeOnly "org.lwjgl:lwjgl-stb:$lwjglVersion:$lwjglNatives"
-    runtimeOnly "org.lwjgl:lwjgl-vulkan:$lwjglVersion:$lwjglNatives"
+    if(Os.isFamily(Os.FAMILY_MAC)) {
+        runtimeOnly "org.lwjgl:lwjgl-vulkan:$lwjglVersion:$lwjglNatives"
+    }
     implementation "org.joml:joml:${jomlVersion}"
     implementation 'org.spongepowered:noise:2.0.0-SNAPSHOT'
     compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.11.2'
@@ -59,6 +60,8 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.3.1'
 }
+
+sourceSets.main.output.resourcesDir = "build/classes/kotlin/main"
 
 compileKotlin {
     kotlinOptions.jvmTarget = "1.8"

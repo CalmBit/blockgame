@@ -6,6 +6,7 @@ import gl.VertexShader
 import org.joml.Matrix4f
 import org.lwjgl.opengl.GL31.*
 import org.lwjgl.system.MemoryStack
+import java.io.File
 
 object GuiRenderer {
     var vao: Int = 0
@@ -30,8 +31,8 @@ object GuiRenderer {
         glBindBuffer(GL_ARRAY_BUFFER, vbo)
         glBufferData(GL_ARRAY_BUFFER, doverlay, GL_STATIC_DRAW)
 
-        val vert = VertexShader("shader/doverlay.vert")
-        val frag = FragmentShader("shader/doverlay.frag")
+        val vert = VertexShader(File("shader", "doverlay.vert"))
+        val frag = FragmentShader(File("shader", "doverlay.frag"))
 
         doverlayShader = ShaderProgram(vert, frag)
         doverlayShader.use()

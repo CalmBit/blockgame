@@ -3,13 +3,12 @@ package render
 import gl.FragmentShader
 import gl.ShaderProgram
 import gl.VertexShader
-import org.joml.Math
 import org.joml.Matrix4f
 import org.joml.Vector3f
-import org.lwjgl.opengl.GL20
 import org.lwjgl.opengl.GL31.*
 import org.lwjgl.system.MemoryStack
 import world.WorldType
+import java.io.File
 
 object PlaneRenderer {
     var vao: Int = 0
@@ -40,8 +39,8 @@ object PlaneRenderer {
         renderPlane(16.0f)
         renderPlane(-16.0f)
 
-        var planeVert= VertexShader("shader/plane.vert")
-        var planeFrag = FragmentShader("shader/plane.frag")
+        var planeVert= VertexShader(File("shader", "plane.vert"))
+        var planeFrag = FragmentShader(File("shader", "plane.frag"))
         planeShader = ShaderProgram(planeVert, planeFrag)
 
         planeShader.use()

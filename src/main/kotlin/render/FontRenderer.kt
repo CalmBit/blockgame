@@ -3,9 +3,9 @@ package render
 import gl.*
 import org.joml.Matrix4f
 import org.joml.Vector3f
-import org.lwjgl.opengl.GL11
 import org.lwjgl.opengl.GL31.*
 import org.lwjgl.system.MemoryStack
+import java.io.File
 
 
 object FontRenderer {
@@ -29,15 +29,15 @@ object FontRenderer {
         glBindVertexArray(vao)
         vbo = glGenBuffers()
         glBindBuffer(GL_ARRAY_BUFFER, vbo)
-        font = Font("font/alphabet.png")
+        font = Font(File("font", "alphabet.png"))
 
         fontHeight = font.height.toFloat()
         fontWidths = FloatArray(font.fontTable.length) {
             font.getWidthOf(font.fontTable[it]).toFloat()
         }
 
-        var textVert= VertexShader("shader/text.vert")
-        var textFrag = FragmentShader("shader/text.frag")
+        var textVert= VertexShader(File("shader", "text.vert"))
+        var textFrag = FragmentShader(File("shader", "text.frag"))
         fontShader = ShaderProgram(textVert, textFrag)
 
         fontShader.use()

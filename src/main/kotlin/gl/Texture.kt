@@ -6,30 +6,27 @@ import org.lwjgl.system.MemoryStack
 import java.io.File
 import java.nio.ByteBuffer
 
-class Texture(file: String) {
+class Texture(file: File) {
     var tex: Int = glGenTextures()
     var width: Int
     var height: Int
 
     init {
         glBindTexture(GL_TEXTURE_2D, tex)
-        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT )
-        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT )
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
         var stack: MemoryStack? = null
         var img: ByteBuffer? = null
-        var fileName = file
-        if(File.separator != "/") {
-            fileName = file.replace("/", "\\")
-        }
+        var fileName = File(javaClass.classLoader.getResource("").path, file.path).absolutePath
         try {
             stack = MemoryStack.stackPush()
             var w = stack.mallocInt(1)
             var h = stack.mallocInt(1)
             var chan = stack.mallocInt(1)
-            img = stbi_load(javaClass.classLoader.getResource(fileName).path, w,h,chan,4)
-                ?: throw RuntimeException("Unable to load " + file + "\n" + stbi_failure_reason())
+            img = stbi_load(fileName, w, h, chan, 4)
+                ?: throw RuntimeException("Unable to load " + fileName + "\n" + stbi_failure_reason())
             width = w.get(0)
             height = h.get(0)
         } finally {
