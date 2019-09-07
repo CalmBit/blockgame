@@ -15,6 +15,6 @@ class BlockOre(_name: RegistryName) : Block(_name) {
         z: Int,
         face: EnumDirection
     ): Boolean {
-        return true
+        return false
     }
 }

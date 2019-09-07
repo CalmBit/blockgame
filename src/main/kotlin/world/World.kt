@@ -25,7 +25,7 @@ class World(val window: Long, prog: ShaderProgram) {
     val bindChunkQueue: Queue<BindChunkBatch> = ArrayDeque<BindChunkBatch>((maxX*2)*(maxZ*2))
     val lazyChunkQueue: Queue<Pair<Int, Int>> = ArrayDeque<Pair<Int, Int>>((maxX*2)*(maxZ*2))
 
-    val worldType: WorldType = WorldType.DEFAULT
+    val worldType: WorldType = WorldType.HELL
 
     init {
         for(x in -maxX until maxX) {

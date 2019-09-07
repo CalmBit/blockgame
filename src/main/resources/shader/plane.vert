@@ -20,5 +20,5 @@ void main()
     FogColor = fogColor;
     gl_Position = proj * view * model * vec4(position, 1.0);
 
-    fogDepth = -(view * model * vec4(position,1.0)).z * 2.5;
+    fogDepth = -(view * model * vec4(position,1.0)).z * 5;
 }
