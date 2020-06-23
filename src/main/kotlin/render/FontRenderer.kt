@@ -58,8 +58,8 @@ object FontRenderer {
     }
 
     fun renderWithShadow(x: Float, y: Float, text: String, scale: Float, color: Vector3f = WHITE) {
-        renderText(x,y,text,scale,color)
         renderText(x+(1.0f),y+(1.0f),text,scale,SHADOW)
+        renderText(x,y,text,scale,color)
     }
 
     fun renderText(x: Float, y: Float, text: String, scale: Float, color: Vector3f = WHITE) {
@@ -134,12 +134,27 @@ object FontRenderer {
         glBufferData(GL_ARRAY_BUFFER, verts.toFloatArray(), GL_DYNAMIC_DRAW)
     }
 
+    fun renderWithShadowImmediate(proj: Matrix4f, x: Float, y: Float, text: String, scale: Float, color: Vector3f = WHITE) {
+        renderWithShadow(x,y,text,scale,color)
+        draw(proj)
+    }
+
     fun getFontWidth(c: Char): Float {
         if(c in font.fontTable) {
             return fontWidths[font.fontTable.indexOf(c)]
         } else {
             return font.getWidthOf(c).toFloat()
         }
+    }
+
+
+    fun getStringWidth(s: String, scale: Float): Float {
+        var width: Float = 0.0f
+        for(c in s) {
+            width += (getFontWidth(c) * scale)
+            width += scale
+        }
+        return width
     }
 
     fun draw(proj: Matrix4f) {

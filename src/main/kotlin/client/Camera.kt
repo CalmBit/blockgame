@@ -8,6 +8,7 @@ import org.lwjgl.glfw.GLFW
 class Camera {
     var pos = Vector3f(16.0f, 84.0f, 16.0f)
     var front = Vector3f(0.0f, 0.0f, 32.0f)
+    var up = Vector3f(0.0f, 1.0f, 0.0f);
 
     var yaw = 0.0
     var pitch = 0.0
@@ -46,14 +47,10 @@ class Camera {
     fun updatePosition(keyStates: Array<Boolean>) {
         if (keyStates[GLFW.GLFW_KEY_W]) pos.add(Vector3f(front.x * 0.5f, front.y * 0.5f, front.z * 0.5f))
         if (keyStates[GLFW.GLFW_KEY_S]) pos.sub(Vector3f(front.x * 0.5f, front.y * 0.5f, front.z * 0.5f))
-        if (keyStates[GLFW.GLFW_KEY_A]) pos.sub(
-            Vector3f(front.x, front.y, front.z)
-                .cross(Vector3f(0.0f, 1.0f, 0.0f).div(2.0f))
-        )
-        if (keyStates[GLFW.GLFW_KEY_D]) pos.add(
-            Vector3f(front.x, front.y, front.z)
-                .cross(Vector3f(0.0f, 1.0f, 0.0f).div(2.0f))
-        )
+        if (keyStates[GLFW.GLFW_KEY_A])
+            pos.sub(Vector3f(front.x * 0.5f, front.y * 0.5f, front.z * 0.5f).cross(up))
+        if (keyStates[GLFW.GLFW_KEY_D])
+            pos.add(Vector3f(front.x * 0.5f, front.y * 0.5f, front.z * 0.5f).cross(up))
     }
 
     fun generateViewProj(renderDistance: Float): Pair<Matrix4f, Matrix4f> {

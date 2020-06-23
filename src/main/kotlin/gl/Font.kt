@@ -1,5 +1,6 @@
 package gl
 
+import org.lwjgl.BufferUtils
 import org.lwjgl.opengl.GL31.*
 import org.lwjgl.stb.STBImage
 import org.lwjgl.system.MemoryStack
@@ -7,7 +8,7 @@ import java.io.File
 import java.lang.RuntimeException
 import java.nio.ByteBuffer
 
-class Font(file: File) {
+class Font(file: File)   {
     var tex: Int = glGenTextures()
     var width: Int
     var height: Int
@@ -28,14 +29,18 @@ class Font(file: File) {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
         var stack: MemoryStack? = null
         var img: ByteBuffer? = null
-        var fileName = File(javaClass.classLoader.getResource("").path, file.path).absolutePath
+        val stream = javaClass.classLoader.getResourceAsStream(file.path)!!
+        val bytes = stream.readBytes()
+        val buf = BufferUtils.createByteBuffer(bytes.size)
+        buf.put(bytes)
+        buf.flip()
         try {
             stack = MemoryStack.stackPush()
             var w = stack.mallocInt(1)
             var h = stack.mallocInt(1)
             var chan = stack.mallocInt(1)
-            img = STBImage.stbi_load(fileName, w, h, chan, 4)
-                ?: throw RuntimeException("Unable to load " + file + "\n" + STBImage.stbi_failure_reason())
+            img = STBImage.stbi_load_from_memory(buf, w, h, chan, 4)
+                ?: throw RuntimeException("Unable to load " + file.path + "\n" + STBImage.stbi_failure_reason())
             width = w.get(0)
             height = h.get(0)
             vOffset = 1.0f/(height.toFloat()*8.0f)

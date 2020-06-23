@@ -7,11 +7,13 @@ import org.lwjgl.glfw.Callbacks.glfwFreeCallbacks
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.glfw.GLFWErrorCallback
 import org.lwjgl.opengl.GL
+import org.lwjgl.opengl.GL11
 import org.lwjgl.opengl.GL31.*
 import org.lwjgl.stb.STBImageWrite
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryUtil.NULL
 import render.FontRenderer
+import render.GuiPauseScreen
 import render.GuiRenderer
 import render.PlaneRenderer
 import world.World
@@ -94,6 +96,7 @@ class Window {
                     glfwSetWindowShouldClose(window, true)
                 else {
                     focused = false
+                    GuiRenderer.attachScreen(GuiPauseScreen())
                     glfwSetInputMode(_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL)
                 }
             else if(key == GLFW_KEY_R && action == GLFW_RELEASE) {
@@ -128,6 +131,7 @@ class Window {
         glfwSetMouseButtonCallback(_window) {window: Long, button: Int, action: Int, mods: Int ->
             if(!focused && button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
                 focused = true
+                GuiRenderer.clearScreen()
                 glfwSetInputMode(_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED)
             }
         }
@@ -135,6 +139,8 @@ class Window {
         glfwSetCursorPosCallback(_window) {window :Long, xPos: Double, yPos: Double ->
             if(focused) {
                 camera.updateCameraRotation(xPos, yPos)
+            } else {
+                GuiRenderer.updateScreenMouse(xPos.toFloat(), yPos.toFloat())
             }
         }
 
@@ -175,7 +181,7 @@ class Window {
         }
 
         glfwMakeContextCurrent(_window)
-        glfwSwapInterval(1)
+       // glfwSwapInterval(1)
         glfwShowWindow(_window)
 
         GL.createCapabilities()
@@ -190,8 +196,8 @@ class Window {
 
         tex!!.use()
 
-        var vert = VertexShader(File("shader", "test.vert"))
-        var frag = FragmentShader(File("shader", "test.frag"))
+        var vert = VertexShader(File("shader", "world.vert"))
+        var frag = FragmentShader(File("shader", "world.frag"))
         prog = ShaderProgram(vert, frag)
 
         prog!!.use()
@@ -206,7 +212,7 @@ class Window {
         PlaneRenderer.setColors(world!!.worldType)
     }
 
-    private suspend fun loop() {
+    private fun loop() {
 
         val runtime = Runtime.getRuntime()
 
@@ -238,7 +244,7 @@ class Window {
                 ticks++
             }
 
-            FontRenderer.renderWithShadow(4.0f, 2.0f, "BlockGame v.Alpha 06132019 (FPS: $fps / TPS: $tps)", 1.0f)
+            FontRenderer.renderWithShadow(4.0f, 2.0f, "BlockGame Alpha 0.1.0 (FPS: $fps / TPS: $tps)", 1.0f)
             FontRenderer.renderWithShadow(4.0f, FontRenderer.font.height * 1.0f + 2.0f, "Position: ${camera.pos.toString(DecimalFormat("0.000"))} (Chunk: ${camera.pos.x.toInt() shr 4}, ${camera.pos.z.toInt() shr 4})", 1.0f)
             FontRenderer.renderWithShadow(4.0f, FontRenderer.font.height * 2.0f + 2.0f, "G: ${world!!.generateChunkQueue.size} / D: ${world!!.decorateChunkQueue.size} / R: ${world!!.renderChunkQueue.size} / B: ${world!!.bindChunkQueue.size}", 1.0f)
             FontRenderer.renderWithShadow(4.0f, FontRenderer.font.height * 3.0f + 2.0f, "Memory: ${(runtime.totalMemory() - runtime.freeMemory())/(1024*1024)}MB/${runtime.totalMemory()/(1024*1024)}MB", 1.0f)
@@ -263,6 +269,8 @@ class Window {
 
             world!!.draw(uniTrans, timer)
 
+            glDisable(GL_DEPTH_TEST)
+
             proj = Matrix4f()
                 .ortho(0.0f, wWidth, wHeight, 0.0f, -1.0f, 10.0f)
 
@@ -270,26 +278,38 @@ class Window {
 
             if(!focused) {
                 GuiRenderer.renderDoverlay()
+                //
+                GuiRenderer.renderScreen(proj)
             }
+
+            glEnable(GL_DEPTH_TEST)
+
 
             fun bindChunk(batch: world.BindChunkBatch) {
                 batch.first.bindRenderData(batch.second, batch.third, prog!!)
             }
 
             if(world!!.bindChunkQueue.size > 0) {
-                if(world!!.bindChunkQueue.size < 24) {
+                if(world!!.bindChunkQueue.size < 48) {
                     while(world!!.bindChunkQueue.size > 0) {
                         bindChunk(world!!.bindChunkQueue.remove())
                     }
                 } else {
-                    for(i in 0 until 24) {
+                    for(i in 0 until 48) {
                         bindChunk(world!!.bindChunkQueue.remove())
                     }
                 }
             }
 
-            if(!world!!.chunkExists(Pair(camera.pos.x.toInt() shr 4, camera.pos.z.toInt() shr 4))) {
-                world!!.lazyChunkQueue.offer(Pair(camera.pos.x.toInt() shr 4, camera.pos.z.toInt() shr 4))
+            val px = (camera.pos.x.toInt() shr 4)
+            val pz = (camera.pos.z.toInt() shr 4)
+
+            for (x in px-4..px+4) {
+                for(z in pz-4..pz+4) {
+                    if(!world!!.chunkExists(Pair(x, z))) {
+                        world!!.lazyChunkQueue.offer(Pair(x, z))
+                    }
+                }
             }
 
             if(world!!.lazyChunkQueue.size > 0) {

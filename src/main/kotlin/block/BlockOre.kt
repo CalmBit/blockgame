@@ -15,6 +15,6 @@ class BlockOre(_name: RegistryName) : Block(_name) {
         z: Int,
         face: EnumDirection
     ): Boolean {
-        return false
+        return super.shouldRenderFace(world, cX, cZ, rY, x, y, z, face)
     }
 }

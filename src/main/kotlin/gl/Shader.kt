@@ -13,8 +13,8 @@ open class Shader(type: Int, file: File) {
     var good = false
 
     init {
-        var filePath = File(javaClass.classLoader.getResource("").path, file.path).toPath()
-        val text = String(Files.readAllBytes(filePath), StandardCharsets.UTF_8)
+        val stream = javaClass.classLoader.getResourceAsStream(file.path)!!
+        val text = String(stream.readBytes(), StandardCharsets.UTF_8)
         glShaderSource(shader, text)
         glCompileShader(shader)
 

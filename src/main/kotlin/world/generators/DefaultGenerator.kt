@@ -7,6 +7,7 @@ import org.spongepowered.noise.Noise
 import org.spongepowered.noise.NoiseQuality
 import world.Chunk
 import world.World
+import world.generators.decorators.DungeonDecorator
 import world.generators.decorators.IDecorator
 import world.generators.decorators.OreDecorator
 import world.generators.decorators.TreeDecorator
@@ -25,6 +26,7 @@ class DefaultGenerator : IGenerator {
             _decorators.add(OreDecorator(TileState(BlockRegistration.IRON_ORE), 8, 4, 64, 12, REPLACE_ONLY_STONE))
             _decorators.add(OreDecorator(TileState(BlockRegistration.GOLD_ORE), 4, 4, 32, 8, REPLACE_ONLY_STONE))
             _decorators.add(OreDecorator(TileState(BlockRegistration.DIAMOND_ORE), 6, 4, 16, 8, REPLACE_ONLY_STONE))
+            _decorators.add(DungeonDecorator(2, 16, 32))
         }
     }
 
@@ -35,9 +37,10 @@ class DefaultGenerator : IGenerator {
                     var height = 64
                     var nX = world.adjustChunk(cX, x) / 16.0
                     var nZ = world.adjustChunk(cZ, z) / 16.0
-                    var h = Noise.valueCoherentNoise3D(nX / 4, 0.0, nZ / 4, world.getSeed(), NoiseQuality.BEST)
-                    h += 0.25 * Noise.valueCoherentNoise3D(nX / 2, 0.0, nZ / 2, world.getSeed(), NoiseQuality.BEST)
-                    h += 0.125 * Noise.valueCoherentNoise3D(nX, 0.0, nZ, world.getSeed(), NoiseQuality.BEST)
+                    var h = Noise.valueCoherentNoise3D(nX / 4, 0.0, nZ / 4, world.getSeed(), NoiseQuality.FAST)
+                    h += 0.25 * Noise.valueCoherentNoise3D(nX / 2, 0.0, nZ / 2, world.getSeed(), NoiseQuality.FAST)
+                    h += 0.125 * Noise.valueCoherentNoise3D(nX, 0.0, nZ, world.getSeed(), NoiseQuality.FAST)
+                    h += 0.0625 * Noise.valueCoherentNoise3D(nX*2, 0.0, nZ*2, world.getSeed(), NoiseQuality.FAST)
                     h = Math.max(0.0, Math.min(1.0, h))
                     h = h-0.5
                     height += (h * 64.0).toInt()

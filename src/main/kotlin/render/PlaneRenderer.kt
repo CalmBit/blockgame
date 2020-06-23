@@ -39,8 +39,8 @@ object PlaneRenderer {
         renderPlane(16.0f)
         renderPlane(-16.0f)
 
-        var planeVert= VertexShader(File("shader", "plane.vert"))
-        var planeFrag = FragmentShader(File("shader", "plane.frag"))
+        var planeVert= VertexShader(File("shader", "skyplane.vert"))
+        var planeFrag = FragmentShader(File("shader", "skyplane.frag"))
         planeShader = ShaderProgram(planeVert, planeFrag)
 
         planeShader.use()

@@ -13,6 +13,7 @@ class Chunk(val world: World, val cX: Int, val cZ: Int) {
     private var _regions: Array<Region?> = Array(8) { null }
     var hasGenerated = false
     var hasDecorated = false
+    var dirty = false
 
 
     fun getTileAt(x: Int, y: Int, z: Int): TileState? {
@@ -64,7 +65,8 @@ class Chunk(val world: World, val cX: Int, val cZ: Int) {
         if (_regions.size >= r) {
            _regions[r]!!.setTileAt(x, y and 15, z, tile)
         }
-        if(this.hasGenerated) {
+        if(this.hasGenerated && !this.dirty) {
+            this.dirty = true
             val c = this
             runBlocking {
                 world.renderChunkMutex.lock()

@@ -19,13 +19,14 @@ class World(val window: Long, prog: ShaderProgram) {
     val maxZ = 8
 
     val generateChunkQueue: Queue<Chunk> = ArrayDeque<Chunk>((maxX*2)*(maxZ*2))
+    val decorateChunkMutex: Mutex = Mutex()
     val decorateChunkQueue: Queue<Chunk> = ArrayDeque<Chunk>((maxX*2)*(maxZ*2))
     val renderChunkMutex: Mutex = Mutex()
     val renderChunkQueue: Queue<RenderChunkBatch> = ArrayDeque<RenderChunkBatch>((maxX*2)*(maxZ*2))
     val bindChunkQueue: Queue<BindChunkBatch> = ArrayDeque<BindChunkBatch>((maxX*2)*(maxZ*2))
     val lazyChunkQueue: Queue<Pair<Int, Int>> = ArrayDeque<Pair<Int, Int>>((maxX*2)*(maxZ*2))
 
-    val worldType: WorldType = WorldType.HELL
+    val worldType: WorldType = WorldType.DEFAULT
 
     init {
         for(x in -maxX until maxX) {
@@ -43,6 +44,7 @@ class World(val window: Long, prog: ShaderProgram) {
                     while (generateChunkQueue.size != 0) {
                         var c = generateChunkQueue.remove()
                         c.generate(world)
+                        decorateChunkMutex.lock()
                         if(world._chunks[Pair(c.cX-1, c.cZ)] != null && !world._chunks[Pair(c.cX-1, c.cZ)]!!.hasDecorated) {
                             decorateChunkQueue.offer(world._chunks[Pair(c.cX-1, c.cZ)])
                         }
@@ -52,12 +54,13 @@ class World(val window: Long, prog: ShaderProgram) {
                         if(world._chunks[Pair(c.cX-1, c.cZ-1)] != null && !world._chunks[Pair(c.cX-1, c.cZ-1)]!!.hasDecorated) {
                             decorateChunkQueue.offer(world._chunks[Pair(c.cX - 1, c.cZ - 1)])
                         }
+                        decorateChunkMutex.unlock()
                         renderChunkMutex.lock()
                         renderChunkQueue.offer(RenderChunkBatch(c, true))
                         renderChunkMutex.unlock()
                     }
                 }
-                delay(250L)
+                delay(50L)
             }
         }
 
@@ -65,8 +68,16 @@ class World(val window: Long, prog: ShaderProgram) {
             while(true) {
                 if (decorateChunkQueue.size > 0) {
                     while (decorateChunkQueue.size != 0) {
-                        var c: Chunk = decorateChunkQueue.poll() ?: continue
-                        if(c.hasDecorated) continue
+                        decorateChunkMutex.lock()
+                        var c: Chunk? = decorateChunkQueue.poll()
+                        if(c == null) {
+                            decorateChunkMutex.unlock()
+                            continue
+                        }
+                        if(c.hasDecorated) {
+                            decorateChunkMutex.unlock()
+                            continue
+                        }
                         try {
                             if (world._chunks[Pair(c.cX + 1, c.cZ)]!!.hasGenerated
                                 && world._chunks[Pair(c.cX, c.cZ + 1)]!!.hasGenerated
@@ -79,10 +90,13 @@ class World(val window: Long, prog: ShaderProgram) {
                             } else {
                                 decorateChunkQueue.offer(c)
                             }
-                        } catch(e: java.lang.Exception) { }
+                            decorateChunkMutex.unlock()
+                        } catch(e: java.lang.Exception) {
+                            decorateChunkMutex.unlock()
+                        }
                     }
                 }
-                delay(250L)
+                delay(50L)
             }
         }
 
@@ -91,8 +105,8 @@ class World(val window: Long, prog: ShaderProgram) {
                 if (renderChunkQueue.size > 0) {
                     var dead: MutableList<RenderChunkBatch> = mutableListOf()
                     while (renderChunkQueue.size != 0) {
-                        var (c,r) = renderChunkQueue.remove()
                         renderChunkMutex.lock()
+                        var (c,r) = renderChunkQueue.remove()
                         for(q in renderChunkQueue) {
                             if(q.first == c) {
                                r = r || q.second
@@ -101,6 +115,7 @@ class World(val window: Long, prog: ShaderProgram) {
                         }
 
                         for(v in dead) {
+                            v.first.dirty = false
                             renderChunkQueue.remove(v)
                         }
                         dead.clear()
@@ -114,7 +129,7 @@ class World(val window: Long, prog: ShaderProgram) {
                             for(x in -1..1) {
                                 for(z in -1..1) {
                                     if(x == 0 && z == 0) continue
-                                    if(world._chunks.containsKey(Pair(c.cX+x, c.cZ+z))) {
+                                    if(world._chunks.containsKey(Pair(c.cX+x, c.cZ+z)) && !c.dirty) {
                                         renderChunkMutex.lock()
                                         renderChunkQueue.offer(RenderChunkBatch(world._chunks[Pair(c.cX+x, c.cZ+z)]!!, false))
                                         renderChunkMutex.unlock()
@@ -124,7 +139,7 @@ class World(val window: Long, prog: ShaderProgram) {
                         }
                     }
                 }
-                delay(250L)
+                delay(50L)
             }
         }
     }
@@ -163,6 +178,7 @@ class World(val window: Long, prog: ShaderProgram) {
         if(_chunks.containsKey(cPos)) {
             _chunks[cPos]?.setTileAt(x and 15, y,z and 15, tile)
         } else {
+            System.out.println("Missing Chunk! X="+ x + " Y=" +y + " Z=" + z + " cpos=" + cPos)
             _chunks[cPos] = Chunk(this, cPos.first, cPos.second)
             _chunks[cPos]?.setTileAt(x and 15, y,z and 15, tile)
             generateChunkQueue.offer(_chunks[cPos])
