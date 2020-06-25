@@ -9,12 +9,6 @@ import kotlin.random.Random
 
 class TreeDecorator(val log: TileState, val leaves: TileState, val chances: Int, val stayPredicate: (TileState) -> Boolean) : IDecorator {
     override fun decorate(world: World, cX: Int, cZ: Int) {
-        world.random = Random(world.getSeed())
-        world.random = Random(
-            world.getSeed()
-                    + (world.random.nextInt(Int.MAX_VALUE) * cX)
-                    + (world.random.nextInt(Int.MAX_VALUE) * cZ) xor world.getSeed().inv()
-        )
         for (c in 0 until chances) {
             var x = world.random.nextInt(8, 16)
             var z = world.random.nextInt(8, 16)

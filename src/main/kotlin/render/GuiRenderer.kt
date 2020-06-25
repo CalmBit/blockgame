@@ -2,13 +2,12 @@ package render
 
 import gl.FragmentShader
 import gl.ShaderProgram
+import gl.Texture
 import gl.VertexShader
 import org.joml.Matrix4f
-import org.lwjgl.opengl.GL15
-import org.lwjgl.opengl.GL30
+import org.lwjgl.opengl.GL11
 import org.lwjgl.opengl.GL31.*
 import org.lwjgl.system.MemoryStack
-import sun.security.provider.certpath.Vertex
 import java.io.File
 
 object GuiRenderer {
@@ -18,15 +17,22 @@ object GuiRenderer {
     var gvao: Int = 0
     var gvbo: Int = 0
 
+    var cvao: Int = 0
+    var cvbo: Int = 0
+
     val doverlayShader: ShaderProgram
     var doverlayProj: Int = 0
 
     val guiShader: ShaderProgram
     var guiProj: Int = 0
+    var ctex: Texture? = null
 
     var screen: GuiScreen? = null
 
     var verts = mutableListOf<Float>()
+
+    var wWidth = 0.0f
+    var wHeight = 0.0f
 
     val doverlay = floatArrayOf(
         0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.5f,
@@ -36,6 +42,8 @@ object GuiRenderer {
         1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.5f,
         0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.5f
     )
+
+    var crosshair = floatArrayOf()
 
     init {
         // Overlay setup
@@ -65,7 +73,7 @@ object GuiRenderer {
         gvao = glGenVertexArrays()
         glBindVertexArray(gvao)
         gvbo = glGenBuffers()
-        glBindBuffer(GL15.GL_ARRAY_BUFFER, gvbo)
+        glBindBuffer(GL_ARRAY_BUFFER, gvbo)
 
         val gvert = VertexShader(File("shader", "gui.vert"))
         val gfrag = FragmentShader(File("shader", "gui.frag"))
@@ -86,6 +94,23 @@ object GuiRenderer {
         var gtexAttrib = glGetAttribLocation(guiShader.program, "texcoord")
         glEnableVertexAttribArray(gtexAttrib)
         glVertexAttribPointer(gtexAttrib, 2, GL_FLOAT, false, 7 * 4, (5 * 4))
+
+        // Crosshair
+        cvao = glGenVertexArrays()
+        glBindVertexArray(cvao)
+        cvbo = glGenBuffers()
+        glBindBuffer(GL_ARRAY_BUFFER, cvbo)
+
+        guiShader.use()
+
+        glEnableVertexAttribArray(gposAttrib)
+        glVertexAttribPointer(gposAttrib, 2, GL_FLOAT, false, 7 * 4, 0L)
+
+        glEnableVertexAttribArray(gcolorAttrib)
+        glVertexAttribPointer(gcolorAttrib, 3, GL_FLOAT, false, 7 * 4, (2 * 4))
+
+        glEnableVertexAttribArray(gtexAttrib)
+        glVertexAttribPointer(gtexAttrib, 2, GL_FLOAT, false, 7 * 4, (5 * 4))
     }
 
     fun updateScreenMouse(x: Float, y: Float) {
@@ -94,7 +119,47 @@ object GuiRenderer {
         }
     }
 
+    fun updateWindowSize(w: Float, h: Float) {
+        this.wWidth = w
+        this.wHeight = h
+        crosshair = floatArrayOf(
+            ((wWidth/2.0f) - 8.0f), ((wHeight/2.0f) - 8.0f), 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
+            ((wWidth/2.0f) - 8.0f), ((wHeight/2.0f) + 8.0f), 1.0f, 1.0f, 1.0f, 0.0f, 1.0f,
+            ((wWidth/2.0f) + 8.0f), ((wHeight/2.0f) + 8.0f), 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+            ((wWidth/2.0f) + 8.0f), ((wHeight/2.0f) + 8.0f), 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+            ((wWidth/2.0f) + 8.0f), ((wHeight/2.0f) - 8.0f), 1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
+            ((wWidth/2.0f) - 8.0f), ((wHeight/2.0f) - 8.0f), 1.0f, 1.0f, 1.0f, 0.0f, 0.0f
+        )
+        var stack: MemoryStack? = null
+        try {
+            stack = MemoryStack.stackPush()
+            var buffer = stack.mallocInt(1)
+            glGetIntegerv(GL_ARRAY_BUFFER_BINDING, buffer)
+            glBindBuffer(GL_ARRAY_BUFFER, cvbo)
+            glBufferData(GL_ARRAY_BUFFER, crosshair, GL_STATIC_DRAW)
+            glBindBuffer(GL_ARRAY_BUFFER, buffer.get())
+        } finally {
+            stack?.pop()
+        }
+    }
 
+    fun renderCrosshair(proj: Matrix4f) {
+        guiShader.use()
+        ctex!!.use()
+        glBindVertexArray(cvao)
+        glBindBuffer(GL_ARRAY_BUFFER, cvbo)
+        glBlendFunc(GL_ONE_MINUS_DST_COLOR, GL_ONE_MINUS_SRC_COLOR);
+
+        var stack: MemoryStack? = null
+        try {
+            stack = MemoryStack.stackPush()
+            glUniformMatrix4fv(guiProj, false, proj.get(stack.mallocFloat(16)))
+        } finally {
+            stack?.pop()
+        }
+        glDrawArrays(GL_TRIANGLES, 0, 6)
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+    }
 
     fun renderDoverlay() {
         doverlayShader.use()
@@ -114,6 +179,7 @@ object GuiRenderer {
 
         glDrawArrays(GL_TRIANGLES, 0, 6)
         glEnable(GL_TEXTURE)
+
     }
 
     fun renderScreen(proj: Matrix4f) {

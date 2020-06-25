@@ -130,8 +130,6 @@ object FontRenderer {
         }
 
         quads = verts.size / 7
-
-        glBufferData(GL_ARRAY_BUFFER, verts.toFloatArray(), GL_DYNAMIC_DRAW)
     }
 
     fun renderWithShadowImmediate(proj: Matrix4f, x: Float, y: Float, text: String, scale: Float, color: Vector3f = WHITE) {
@@ -158,10 +156,14 @@ object FontRenderer {
     }
 
     fun draw(proj: Matrix4f) {
+        if(verts.size == 0)
+            return
         fontShader.use()
         font.use()
         glBindVertexArray(vao)
         glBindBuffer(GL_ARRAY_BUFFER, vbo)
+        glBufferData(GL_ARRAY_BUFFER, verts.toFloatArray(), GL_DYNAMIC_DRAW)
+
 
         var stack: MemoryStack? = null
         try {

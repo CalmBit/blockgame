@@ -13,6 +13,7 @@ class Chunk(val world: World, val cX: Int, val cZ: Int) {
     private var _regions: Array<Region?> = Array(8) { null }
     var hasGenerated = false
     var hasDecorated = false
+    var isLoaded = false
     var dirty = false
 
 

@@ -9,14 +9,10 @@ import kotlin.random.Random
 class OreDecorator(val ore: TileState, val chances: Int, val minY: Int, val maxY: Int, val veinSize: Int, val replacePredicate: (TileState) -> Boolean,
                    val scaleFail: Boolean = true) : IDecorator {
     override fun decorate(world: World, cX: Int, cZ: Int) {
-        world.random = Random(world.getSeed())
-        world.random = Random(world.getSeed()
-                + (world.random.nextInt(Int.MAX_VALUE) * cX)
-                + (world.random.nextInt(Int.MAX_VALUE) * cZ) xor world.getSeed())
         for (c in 0 until chances) {
             var x = world.random.nextInt(8, 16)
             var y = world.random.nextInt(0, 128)
-            var z = +world.random.nextInt(8, 16)
+            var z = world.random.nextInt(8, 16)
 
             if(y < minY || y > maxY) continue
 

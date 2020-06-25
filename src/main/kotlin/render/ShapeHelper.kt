@@ -8,6 +8,12 @@ object ShapeHelper {
     var uvSize = 0.0625f
     var offset = 0.00048828125f
 
+    fun appendToMutList(arr: MutableList<Float>, vararg els: Float) {
+        for(v in els) {
+            arr.add(v)
+        }
+    }
+
     fun appendVerts(world: World, cX: Int, cZ: Int, rY: Int, x: Int, y: Int, z: Int, tileState: TileState, arr: MutableList<Float>) {
         val side = tileState.getUVForFace(EnumDirection.NORTH)
         val u = side.u
@@ -25,99 +31,74 @@ object ShapeHelper {
         val vY = y.toFloat()
         val vZ = z.toFloat()
 
-        var verts: MutableList<Float> = mutableListOf()
-
         val emit = tileState.getEmittance()
 
 
         val light = world.worldType.light
         if(tileState.block.shouldRenderFace(world, cX, cZ, rY, x, y, z, EnumDirection.SOUTH)) {
             // South
-            var sV = floatArrayOf(
+            appendToMutList(arr,
             vX,       vY,       vZ,       (0.6f * light) + emit, (0.6f * light) + emit, (0.6f * light) + emit, (u*uvSize)+uvSize- offset, (v*uvSize)+uvSize- offset,
             vX,       vY+1.0f,  vZ,       (0.6f * light) + emit, (0.6f * light) + emit, (0.6f * light) + emit, (u*uvSize)+uvSize- offset, (v*uvSize) + offset,
             vX+1.0f,  vY+1.0f,  vZ,       (0.6f * light) + emit, (0.6f * light) + emit, (0.6f * light) + emit, (u*uvSize) + offset, (v*uvSize) + offset,
             vX+1.0f,  vY+1.0f,  vZ,       (0.6f * light) + emit, (0.6f * light) + emit, (0.6f * light) + emit, (u*uvSize) + offset, (v*uvSize) + offset,
             vX+1.0f,  vY,       vZ,       (0.6f * light) + emit, (0.6f * light) + emit, (0.6f * light) + emit, (u*uvSize) + offset, (v*uvSize)+uvSize - offset,
             vX,       vY,       vZ,       (0.6f * light) + emit, (0.6f * light) + emit, (0.6f * light) + emit, (u*uvSize)+uvSize - offset, (v*uvSize)+uvSize - offset)
-            for(v in sV) {
-                verts.add(v)
-            }
         }
 
         if(tileState.block.shouldRenderFace(world, cX, cZ, rY, x, y, z, EnumDirection.NORTH)) {
             // North
-            var nV = floatArrayOf(
+            appendToMutList(arr,
             vX,       vY,       vZ+1.0f,  (0.6f * light) + emit, (0.6f * light) + emit, (0.6f * light) + emit, (u*uvSize)+offset, (v*uvSize)+uvSize - offset,
             vX+1.0f,  vY,       vZ+1.0f,  (0.6f * light) + emit, (0.6f * light) + emit, (0.6f * light) + emit, (u*uvSize)+uvSize -offset, (v*uvSize)+uvSize -  offset,
             vX+1.0f,  vY+1.0f,  vZ+1.0f,  (0.6f * light) + emit, (0.6f * light) + emit, (0.6f * light) + emit, (u*uvSize)+uvSize - offset, (v*uvSize)+offset,
             vX+1.0f,  vY+1.0f,  vZ+1.0f,  (0.6f * light) + emit, (0.6f * light) + emit, (0.6f * light) + emit, (u*uvSize)+uvSize - offset, (v*uvSize)+offset,
             vX,       vY+1.0f,  vZ+1.0f,  (0.6f * light) + emit, (0.6f * light) + emit, (0.6f * light) + emit, (u*uvSize)+offset, (v*uvSize)+offset,
             vX,       vY,       vZ+1.0f,  (0.6f * light) + emit, (0.6f * light) + emit, (0.6f * light) + emit, (u*uvSize)+offset, (v*uvSize)+uvSize -  offset)
-            for(v in nV) {
-                verts.add(v)
-            }
         }
 
         if(tileState.block.shouldRenderFace(world, cX, cZ, rY, x, y, z, EnumDirection.EAST)) {
             // East
-            var eV = floatArrayOf(
+            appendToMutList(arr,
             vX,       vY+1.0f,  vZ+1.0f,  (0.8f * light) + emit, (0.8f * light) + emit, (0.8f * light) + emit, (u*uvSize)+uvSize- offset, (v*uvSize)+ offset,
             vX,       vY+1.0f,  vZ,       (0.8f * light) + emit, (0.8f * light) + emit, (0.8f * light) + emit, (u*uvSize)+ offset, (v*uvSize)+ offset,
             vX,       vY,       vZ,       (0.8f * light) + emit, (0.8f * light) + emit, (0.8f * light) + emit, (u*uvSize)+ offset, (v*uvSize)+uvSize- offset,
             vX,       vY,       vZ,       (0.8f * light) + emit, (0.8f * light) + emit, (0.8f * light) + emit, (u*uvSize)+ offset, (v*uvSize)+uvSize- offset,
             vX,       vY,       vZ+1.0f,  (0.8f * light) + emit, (0.8f * light) + emit, (0.8f * light) + emit, (u*uvSize)+uvSize- offset, (v*uvSize)+uvSize- offset,
             vX,       vY+1.0f,  vZ+1.0f,  (0.8f * light) + emit, (0.8f * light) + emit, (0.8f * light) + emit, (u*uvSize)+uvSize- offset, (v*uvSize)+ offset)
-            for(v in eV) {
-                verts.add(v)
-            }
         }
 
         if(tileState.block.shouldRenderFace(world, cX, cZ, rY, x, y, z, EnumDirection.WEST)) {
             // West
-            var wV = floatArrayOf(
+            appendToMutList(arr,
             vX+1.0f,  vY+1.0f,  vZ+1.0f,  (0.8f * light) + emit, (0.8f * light) + emit, (0.8f * light) + emit, (u*uvSize)+ offset, (v*uvSize)+ offset,
             vX+1.0f,  vY,       vZ+1.0f,  (0.8f * light) + emit, (0.8f * light) + emit, (0.8f * light) + emit, (u*uvSize)+ offset, (v*uvSize)+uvSize- offset,
             vX+1.0f,  vY,       vZ,       (0.8f * light) + emit, (0.8f * light) + emit, (0.8f * light) + emit, (u*uvSize)+uvSize- offset, (v*uvSize)+uvSize- offset,
             vX+1.0f,  vY,       vZ,       (0.8f * light) + emit, (0.8f * light) + emit, (0.8f * light) + emit, (u*uvSize)+uvSize- offset, (v*uvSize)+uvSize- offset,
             vX+1.0f,  vY+1.0f,  vZ,       (0.8f * light) + emit, (0.8f * light) + emit, (0.8f * light) + emit, (u*uvSize)+uvSize- offset, (v*uvSize)+ offset,
             vX+1.0f,  vY+1.0f,  vZ+1.0f,  (0.8f * light) + emit, (0.8f * light) + emit, (0.8f * light) + emit, (u*uvSize)+ offset, (v*uvSize)+ offset)
-            for(v in wV) {
-                verts.add(v)
-            }
         }
 
         if(tileState.block.shouldRenderFace(world, cX, cZ, rY, x, y, z, EnumDirection.DOWN)) {
             // Bottom
-            var bV = floatArrayOf(
+            appendToMutList(arr,
             vX,       vY,       vZ,       (0.5f * light) + emit, (0.5f * light) + emit, (0.5f * light) + emit, (bu*uvSize)+uvSize- offset, (bv*uvSize)+uvSize- offset,
             vX+1.0f,  vY,       vZ,       (0.5f * light) + emit, (0.5f * light) + emit, (0.5f * light) + emit, (bu*uvSize)+uvSize- offset, (bv*uvSize)+ offset,
             vX+1.0f,  vY,       vZ+1.0f,  (0.5f * light) + emit, (0.5f * light) + emit, (0.5f * light) + emit, (bu*uvSize)+ offset, (bv*uvSize)+ offset,
             vX+1.0f,  vY,       vZ+1.0f,  (0.5f * light) + emit, (0.5f * light) + emit, (0.5f * light) + emit, (bu*uvSize)+ offset, (bv*uvSize)+ offset,
             vX,       vY,       vZ+1.0f,  (0.5f * light) + emit, (0.5f * light) + emit, (0.5f * light) + emit, (bu*uvSize)+ offset, (bv*uvSize)+uvSize- offset,
             vX,       vY,       vZ,       (0.5f * light) + emit, (0.5f * light) + emit, (0.5f * light) + emit, (bu*uvSize)+uvSize- offset, (bv*uvSize)+uvSize- offset)
-            for(v in bV) {
-                verts.add(v)
-            }
         }
 
         if(tileState.block.shouldRenderFace(world, cX, cZ, rY, x, y, z, EnumDirection.UP)) {
             // Top
-            var tV = floatArrayOf(
+            appendToMutList(arr,
             vX,       vY+1.0f,  vZ,       (1.0f * light) + emit, (1.0f * light) + emit, (1.0f * light) + emit, (tu*uvSize)+uvSize- offset, (tv*uvSize)+ offset,
             vX,       vY+1.0f,  vZ+1.0f,  (1.0f * light) + emit, (1.0f * light) + emit, (1.0f * light) + emit, (tu*uvSize)+ offset, (tv*uvSize)+ offset,
             vX+1.0f,  vY+1.0f,  vZ+1.0f,  (1.0f * light) + emit, (1.0f * light) + emit, (1.0f * light) + emit, (tu*uvSize)+ offset, (tv*uvSize)+uvSize- offset,
             vX+1.0f,  vY+1.0f,  vZ+1.0f,  (1.0f * light) + emit, (1.0f * light) + emit, (1.0f * light) + emit, (tu*uvSize)+ offset, (tv*uvSize)+uvSize- offset,
             vX+1.0f,  vY+1.0f,  vZ,       (1.0f * light) + emit, (1.0f * light) + emit, (1.0f * light) + emit, (tu*uvSize)+uvSize - offset, (tv*uvSize)+uvSize- offset,
             vX,       vY+1.0f,  vZ,       (1.0f * light) + emit, (1.0f * light) + emit, (1.0f * light) + emit, (tu*uvSize)+uvSize - offset, (tv*uvSize)+ offset)
-            for(v in tV) {
-                verts.add(v)
-            }
-        }
-
-
-        for(i in 0 until verts.size) {
-            arr.add(verts[i])
         }
     }
 }

@@ -7,7 +7,7 @@ import org.lwjgl.glfw.GLFW
 
 class Camera {
     var pos = Vector3f(16.0f, 84.0f, 16.0f)
-    var front = Vector3f(0.0f, 0.0f, 32.0f)
+    var front = Vector3f(0.0f, 0.0f, 1.0f)
     var up = Vector3f(0.0f, 1.0f, 0.0f);
 
     var yaw = 0.0

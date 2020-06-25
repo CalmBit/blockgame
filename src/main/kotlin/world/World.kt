@@ -31,7 +31,7 @@ class World(val window: Long, prog: ShaderProgram) {
     init {
         for(x in -maxX until maxX) {
             for(z in -maxX until maxZ) {
-                _chunks[Pair(x,z)] = Chunk(this, x, z)
+                addChunk(Pair(x,z))
                 generateChunkQueue.offer(_chunks[Pair(x,z)])
             }
         }
@@ -43,6 +43,10 @@ class World(val window: Long, prog: ShaderProgram) {
                 if (generateChunkQueue.size > 0) {
                     while (generateChunkQueue.size != 0) {
                         var c = generateChunkQueue.remove()
+                        if(c.hasGenerated) continue
+                        while(!c.isLoaded) {
+
+                        }
                         c.generate(world)
                         decorateChunkMutex.lock()
                         if(world._chunks[Pair(c.cX-1, c.cZ)] != null && !world._chunks[Pair(c.cX-1, c.cZ)]!!.hasDecorated) {
@@ -179,9 +183,9 @@ class World(val window: Long, prog: ShaderProgram) {
             _chunks[cPos]?.setTileAt(x and 15, y,z and 15, tile)
         } else {
             System.out.println("Missing Chunk! X="+ x + " Y=" +y + " Z=" + z + " cpos=" + cPos)
-            _chunks[cPos] = Chunk(this, cPos.first, cPos.second)
-            _chunks[cPos]?.setTileAt(x and 15, y,z and 15, tile)
-            generateChunkQueue.offer(_chunks[cPos])
+           // _chunks[cPos] = Chunk(this, cPos.first, cPos.second)
+           // _chunks[cPos]?.setTileAt(x and 15, y,z and 15, tile)
+          //  generateChunkQueue.offer(_chunks[cPos])
         }
     }
 
@@ -222,8 +226,10 @@ class World(val window: Long, prog: ShaderProgram) {
     }
 
     fun addChunk(cPos: Pair<Int, Int>): Chunk {
-        _chunks[cPos] = Chunk(this, cPos.first, cPos.second)
-        return _chunks[cPos]!!
+        val c = Chunk(this, cPos.first, cPos.second)
+        c.isLoaded = true
+        _chunks[cPos] = c
+        return c
     }
 
     fun tick() {

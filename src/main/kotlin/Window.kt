@@ -12,10 +12,7 @@ import org.lwjgl.opengl.GL31.*
 import org.lwjgl.stb.STBImageWrite
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryUtil.NULL
-import render.FontRenderer
-import render.GuiPauseScreen
-import render.GuiRenderer
-import render.PlaneRenderer
+import render.*
 import world.World
 import java.io.File
 import java.text.DecimalFormat
@@ -40,7 +37,7 @@ class Window {
     var lastTick: Instant = Instant.EPOCH
     var tex: Texture? = null
     var tex2: Texture? = null
-    var ctex: Texture? = null
+
     var world: World? = null
     var prog: ShaderProgram? = null
     var wWidth = 800.0f
@@ -59,6 +56,9 @@ class Window {
     val filedf = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS")
 
     var keyStates: Array<Boolean> = Array(GLFW_KEY_LAST+1) {false}
+
+    var firstGenDone = false
+    var loadScreen = GuiLoadingScreen()
 
     fun run() {
         Logger.logger.debug("[RUN]")
@@ -91,6 +91,8 @@ class Window {
             throw RuntimeException("Failed to create Window")
 
         glfwSetKeyCallback(_window) { window: Long, key: Int, scancode: Int, action: Int, mods: Int ->
+            if(!firstGenDone)
+                return@glfwSetKeyCallback
             if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE)
                 if(!focused)
                     glfwSetWindowShouldClose(window, true)
@@ -126,8 +128,6 @@ class Window {
             }
         }
 
-        glfwSetInputMode(_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED)
-
         glfwSetMouseButtonCallback(_window) {window: Long, button: Int, action: Int, mods: Int ->
             if(!focused && button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
                 focused = true
@@ -147,6 +147,7 @@ class Window {
         glfwSetWindowSizeCallback(_window) {window: Long, width: Int, height: Int ->
             wWidth = width.toFloat()
             wHeight = height.toFloat()
+            GuiRenderer.updateWindowSize(wWidth, wHeight)
         }
 
         glfwSetFramebufferSizeCallback(_window) {window: Long, width: Int, height: Int ->
@@ -192,7 +193,7 @@ class Window {
 
         tex = Texture(File("texture", "terrain.png"))
         tex2 = Texture(File("texture", "terrain2.png"))
-        ctex = Texture(File("texture", "crosshair.png"))
+        GuiRenderer.ctex = Texture(File("texture", "crosshair.png"))
 
         tex!!.use()
 
@@ -209,7 +210,11 @@ class Window {
 
         world = World(_window, prog!!)
 
+        GuiRenderer.updateWindowSize(wWidth, wHeight)
+
         PlaneRenderer.setColors(world!!.worldType)
+
+        GuiRenderer.attachScreen(loadScreen)
     }
 
     private fun loop() {
@@ -226,106 +231,148 @@ class Window {
         while (!glfwWindowShouldClose(_window)) {
             glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
 
-            timer += 0.01f
+            if(firstGenDone) {
+                timer += 0.01f
 
-            if(focused) {
-                camera.updatePosition(keyStates)
-            }
+                if (focused) {
+                    camera.updatePosition(keyStates)
+                }
 
-            if(!texUse) {
-                tex2!!.use()
-            } else {
-                tex!!.use()
-            }
-
-            if(Duration.between(lastTick, Instant.now()).toMillis() >= 40) {
-                world!!.tick()
-                lastTick = Instant.now()
-                ticks++
-            }
-
-            FontRenderer.renderWithShadow(4.0f, 2.0f, "BlockGame Alpha 0.1.0 (FPS: $fps / TPS: $tps)", 1.0f)
-            FontRenderer.renderWithShadow(4.0f, FontRenderer.font.height * 1.0f + 2.0f, "Position: ${camera.pos.toString(DecimalFormat("0.000"))} (Chunk: ${camera.pos.x.toInt() shr 4}, ${camera.pos.z.toInt() shr 4})", 1.0f)
-            FontRenderer.renderWithShadow(4.0f, FontRenderer.font.height * 2.0f + 2.0f, "G: ${world!!.generateChunkQueue.size} / D: ${world!!.decorateChunkQueue.size} / R: ${world!!.renderChunkQueue.size} / B: ${world!!.bindChunkQueue.size}", 1.0f)
-            FontRenderer.renderWithShadow(4.0f, FontRenderer.font.height * 3.0f + 2.0f, "Memory: ${(runtime.totalMemory() - runtime.freeMemory())/(1024*1024)}MB/${runtime.totalMemory()/(1024*1024)}MB", 1.0f)
-            FontRenderer.renderWithShadow(4.0f, FontRenderer.font.height * 4.0f + 2.0f, "Seed: ${world!!.getSeed()}", 1.0f)
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-
-            var (view, proj) = camera.generateViewProj(renderDistance)
-
-            PlaneRenderer.draw(view, proj, camera.pos, camera.pitch, camera.yaw)
-
-            prog!!.use()
-
-            var stack: MemoryStack? = null
-            try {
-                stack = MemoryStack.stackPush()
-                glUniformMatrix4fv(uniView, false, view.get(stack.mallocFloat(16)))
-                glUniformMatrix4fv(uniProj, false, proj.get(stack.mallocFloat(16)))
-                glUniform3fv(uniFog, atmocolor.get(stack.mallocFloat(3)))
-            } finally {
-                stack?.pop()
-            }
-
-            world!!.draw(uniTrans, timer)
-
-            glDisable(GL_DEPTH_TEST)
-
-            proj = Matrix4f()
-                .ortho(0.0f, wWidth, wHeight, 0.0f, -1.0f, 10.0f)
-
-            FontRenderer.draw(proj)
-
-            if(!focused) {
-                GuiRenderer.renderDoverlay()
-                //
-                GuiRenderer.renderScreen(proj)
-            }
-
-            glEnable(GL_DEPTH_TEST)
-
-
-            fun bindChunk(batch: world.BindChunkBatch) {
-                batch.first.bindRenderData(batch.second, batch.third, prog!!)
-            }
-
-            if(world!!.bindChunkQueue.size > 0) {
-                if(world!!.bindChunkQueue.size < 48) {
-                    while(world!!.bindChunkQueue.size > 0) {
-                        bindChunk(world!!.bindChunkQueue.remove())
-                    }
+                if (!texUse) {
+                    tex2!!.use()
                 } else {
-                    for(i in 0 until 48) {
-                        bindChunk(world!!.bindChunkQueue.remove())
+                    tex!!.use()
+                }
+
+                if (Duration.between(lastTick, Instant.now()).toMillis() >= 40) {
+                    world!!.tick()
+                    lastTick = Instant.now()
+                    ticks++
+                }
+
+                FontRenderer.renderWithShadow(4.0f, 2.0f, "BlockGame pre-062320 (FPS: $fps / TPS: $tps)", 1.0f)
+                FontRenderer.renderWithShadow(
+                    4.0f,
+                    FontRenderer.font.height * 1.0f + 2.0f,
+                    "Position: (X: ${camera.pos.x} / Y: ${camera.pos.y} / Z: ${camera.pos.z}) (Chunk: ${camera.pos.x.toInt() shr 4}, ${camera.pos.z.toInt() shr 4})",
+                    1.0f
+                )
+                FontRenderer.renderWithShadow(
+                    4.0f,
+                    FontRenderer.font.height * 2.0f + 2.0f,
+                    "G: ${world!!.generateChunkQueue.size} / D: ${world!!.decorateChunkQueue.size} / R: ${world!!.renderChunkQueue.size} / B: ${world!!.bindChunkQueue.size}",
+                    1.0f
+                )
+                FontRenderer.renderWithShadow(
+                    4.0f,
+                    FontRenderer.font.height * 3.0f + 2.0f,
+                    "Memory: ${(runtime.totalMemory() - runtime.freeMemory()) / (1024 * 1024)}MB/${runtime.totalMemory() / (1024 * 1024)}MB",
+                    1.0f
+                )
+                FontRenderer.renderWithShadow(
+                    4.0f,
+                    FontRenderer.font.height * 4.0f + 2.0f,
+                    "Seed: ${world!!.getSeed()}",
+                    1.0f
+                )
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+
+                var (view, proj) = camera.generateViewProj(renderDistance)
+
+                PlaneRenderer.draw(view, proj, camera.pos, camera.pitch, camera.yaw)
+
+                prog!!.use()
+
+                var stack: MemoryStack? = null
+                try {
+                    stack = MemoryStack.stackPush()
+                    glUniformMatrix4fv(uniView, false, view.get(stack.mallocFloat(16)))
+                    glUniformMatrix4fv(uniProj, false, proj.get(stack.mallocFloat(16)))
+                    glUniform3fv(uniFog, atmocolor.get(stack.mallocFloat(3)))
+                } finally {
+                    stack?.pop()
+                }
+
+                world!!.draw(uniTrans, timer)
+
+                glDisable(GL_DEPTH_TEST)
+
+                proj = Matrix4f()
+                    .ortho(0.0f, wWidth, wHeight, 0.0f, -1.0f, 10.0f)
+
+                GuiRenderer.renderCrosshair(proj)
+
+                FontRenderer.draw(proj)
+
+                if (!focused) {
+                    GuiRenderer.renderDoverlay()
+                    //
+                    GuiRenderer.renderScreen(proj)
+                }
+
+                glEnable(GL_DEPTH_TEST)
+
+                fun bindChunk(batch: world.BindChunkBatch) {
+                    batch.first.bindRenderData(batch.second, batch.third, prog!!)
+                }
+
+                if (world!!.bindChunkQueue.size > 0) {
+                    if (world!!.bindChunkQueue.size < 48) {
+                        while (world!!.bindChunkQueue.size > 0) {
+                            bindChunk(world!!.bindChunkQueue.remove())
+                        }
+                    } else {
+                        for (i in 0 until 48) {
+                            bindChunk(world!!.bindChunkQueue.remove())
+                        }
                     }
                 }
-            }
 
-            val px = (camera.pos.x.toInt() shr 4)
-            val pz = (camera.pos.z.toInt() shr 4)
+                val px = (camera.pos.x.toInt() shr 4)
+                val pz = (camera.pos.z.toInt() shr 4)
 
-            for (x in px-4..px+4) {
-                for(z in pz-4..pz+4) {
-                    if(!world!!.chunkExists(Pair(x, z))) {
-                        world!!.lazyChunkQueue.offer(Pair(x, z))
+                for (x in px - 4..px + 4) {
+                    for (z in pz - 4..pz + 4) {
+                        if (!world!!.chunkExists(Pair(x, z))) {
+                            world!!.lazyChunkQueue.offer(Pair(x, z))
+                        }
                     }
                 }
-            }
 
-            if(world!!.lazyChunkQueue.size > 0) {
-                while(world!!.lazyChunkQueue.size > 0) {
-                    var cPos = world!!.lazyChunkQueue.remove()
-                    world!!.generateChunkQueue.offer(world!!.addChunk(cPos))
+                if (world!!.lazyChunkQueue.size > 0) {
+                    while (world!!.lazyChunkQueue.size > 0) {
+                        var cPos = world!!.lazyChunkQueue.remove()
+                        val chunk = world!!.addChunk(cPos)
+                        world!!.generateChunkQueue.offer(chunk)
+                    }
+                }
+
+                frames++
+                if (Duration.between(lastFs, Instant.now()).seconds >= 1) {
+                    fps = frames
+                    tps = ticks
+                    frames = 0
+                    ticks = 0
+                    lastFs = Instant.now()
                 }
             }
+            else {
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+                glDisable(GL_DEPTH_TEST)
 
-            frames++
-            if(Duration.between(lastFs, Instant.now()).seconds >= 1) {
-                fps = frames
-                tps = ticks
-                frames = 0
-                ticks = 0
-                lastFs = Instant.now()
+                proj = Matrix4f().ortho(0.0f, wWidth, wHeight, 0.0f, -1.0f, 10.0f)
+
+                FontRenderer.draw(proj)
+
+                loadScreen.chunksLeft = world!!.generateChunkQueue.size
+
+                GuiRenderer.renderScreen(proj)
+
+                if(world!!.generateChunkQueue.size == 0) {
+                    glfwSetInputMode(_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED)
+                    GuiRenderer.clearScreen()
+                    firstGenDone = true
+                }
             }
 
             glfwSwapBuffers(_window)

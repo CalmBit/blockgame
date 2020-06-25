@@ -3,16 +3,12 @@ package block
 import gl.UVPair
 import registry.RegistryName
 
-class BlockLog(_name: RegistryName) : Block(_name) {
-    companion object {
-        var TOP: UVPair = UVPair(15, 0)
-        var SIDE: UVPair = UVPair(14, 0)
-    }
+class BlockLog(val type: LogType) : Block(RegistryName("blockgame", "${type.type_name}_log")) {
 
     override fun getUVForFace(face: EnumDirection): UVPair {
         return when (face) {
-            EnumDirection.UP, EnumDirection.DOWN -> TOP
-            else -> SIDE
+            EnumDirection.UP, EnumDirection.DOWN -> type.top
+            else -> type.side
         }
     }
 }
