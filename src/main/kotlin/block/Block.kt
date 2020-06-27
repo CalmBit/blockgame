@@ -36,8 +36,8 @@ open class Block(private var _name: RegistryName) : IRegistryEntry {
         z: Int,
         face: EnumDirection
     ): Boolean {
-        var adj = face.getCovering(Triple(world.adjustChunk(cX, x),y+(16*rY),world.adjustChunk(cZ, z)))
-        var other = world.getTileAt(adj.first, adj.second, adj.third)
+        var adj = face.getCovering(world.adjustChunk(cX, x),y+(16*rY),world.adjustChunk(cZ, z))
+        var other = world.getTileAt(adj[0], adj[1], adj[2])
         if(face == EnumDirection.UP && y+(16*rY) == 127)
             return true
         if(other != null) {

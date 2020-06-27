@@ -3,6 +3,7 @@ package render
 import gl.*
 import org.joml.Matrix4f
 import org.joml.Vector3f
+import org.lwjgl.opengl.GL15
 import org.lwjgl.opengl.GL31.*
 import org.lwjgl.system.MemoryStack
 import java.io.File
@@ -14,6 +15,7 @@ object FontRenderer {
     var font: Font
     var quads: Int = 0
     val verts = mutableListOf<Float>()
+    var baked_verts = floatArrayOf()
 
     val fontHeight: Float
     val fontWidths: FloatArray
@@ -147,12 +149,29 @@ object FontRenderer {
 
 
     fun getStringWidth(s: String, scale: Float): Float {
-        var width: Float = 0.0f
+        var width = 0.0f
         for(c in s) {
             width += (getFontWidth(c) * scale)
             width += scale
         }
         return width
+    }
+
+    fun bake_font() {
+        if(verts.size > baked_verts.size){
+            baked_verts = FloatArray(verts.size)
+            System.out.println("resizing font")
+        }
+        for(i in 0 until verts.size) {
+            baked_verts[i] = verts[i]
+        }
+    }
+
+    fun clear_all() {
+        for(i in baked_verts.indices) {
+            baked_verts[i] = 0.0f
+        }
+        verts.clear()
     }
 
     fun draw(proj: Matrix4f) {
@@ -162,7 +181,8 @@ object FontRenderer {
         font.use()
         glBindVertexArray(vao)
         glBindBuffer(GL_ARRAY_BUFFER, vbo)
-        glBufferData(GL_ARRAY_BUFFER, verts.toFloatArray(), GL_DYNAMIC_DRAW)
+        bake_font()
+        glBufferData(GL_ARRAY_BUFFER, baked_verts, GL_DYNAMIC_DRAW)
 
 
         var stack: MemoryStack? = null
@@ -173,6 +193,6 @@ object FontRenderer {
             stack?.pop()
         }
         glDrawArrays(GL_TRIANGLES, 0, quads)
-        verts.clear()
+        clear_all()
     }
 }

@@ -29,10 +29,12 @@ class DensityGenerator : IGenerator {
                 h *= 2.5
                 maxHeight += (h * 64.0).toInt()
                 maxHeight = max(32, min(maxHeight, 127))
+                var avg = 0.0
                 for (y in 0..maxHeight) {
                     var density = formation.getValue(nX/8.0, y.toDouble(), nZ/8.0)
-                    density /= 8
                     density += ((64 - maxHeight) / 32.0)
+                    density -= 0.75
+                    avg += density
                     var tile = TileState(BlockRegistration.AIR)
                     if(density >= 0)  {
                         tile = if(y == maxHeight) {
@@ -43,6 +45,8 @@ class DensityGenerator : IGenerator {
                     }
                     world.setTileAtAdjusted(cX, cZ, x, y, z, TilePalette.getTileRepresentation(tile))
                 }
+                avg /= maxHeight
+                //System.out.println(avg)
                 /*for (y in -1 downTo -5) {
                     world.setTileAtAdjusted(cX, cZ, x, maxHeight + y, z, TilePalette.getTileRepresentation(TileState(BlockRegistration.DIRT)))
                 }*/
