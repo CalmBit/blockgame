@@ -191,6 +191,8 @@ class Window {
         glEnable(GL_CULL_FACE)
         glEnable(GL_BLEND)
 
+        GuiRenderer.init()
+
         tex = Texture(File("texture", "terrain.png"))
         tex2 = Texture(File("texture", "terrain2.png"))
         GuiRenderer.ctex = Texture(File("texture", "crosshair.png"))

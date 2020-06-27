@@ -28,7 +28,7 @@ class GuiButton(val pos: Vector2f) : GuiBase() {
     }
 
     override fun render(proj: Matrix4f) {
-        GuiRenderer.guiShader.use()
+        GuiRenderer.guiShader!!.use()
         glBindVertexArray(GuiRenderer.gvao)
         glBindBuffer(GL_ARRAY_BUFFER, GuiRenderer.gvbo)
 

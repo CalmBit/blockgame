@@ -20,10 +20,10 @@ object GuiRenderer {
     var cvao: Int = 0
     var cvbo: Int = 0
 
-    val doverlayShader: ShaderProgram
+    var doverlayShader: ShaderProgram? = null
     var doverlayProj: Int = 0
 
-    val guiShader: ShaderProgram
+    var guiShader: ShaderProgram? = null
     var guiProj: Int = 0
     var ctex: Texture? = null
 
@@ -33,6 +33,8 @@ object GuiRenderer {
 
     var wWidth = 0.0f
     var wHeight = 0.0f
+
+    var hasInitialized = false
 
     val doverlay = floatArrayOf(
         0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.5f,
@@ -45,7 +47,7 @@ object GuiRenderer {
 
     var crosshair = floatArrayOf()
 
-    init {
+    fun init() {
         // Overlay setup
         dvao = glGenVertexArrays()
         glBindVertexArray(dvao)
@@ -57,15 +59,15 @@ object GuiRenderer {
         val frag = FragmentShader(File("shader", "doverlay.frag"))
 
         doverlayShader = ShaderProgram(vert, frag)
-        doverlayShader.use()
+        doverlayShader!!.use()
 
-        doverlayProj = glGetUniformLocation(doverlayShader.program, "proj")
+        doverlayProj = glGetUniformLocation(doverlayShader!!.program, "proj")
 
-        var posAttrib = glGetAttribLocation(doverlayShader.program, "position")
+        var posAttrib = glGetAttribLocation(doverlayShader!!.program, "position")
         glEnableVertexAttribArray(posAttrib)
         glVertexAttribPointer(posAttrib, 2, GL_FLOAT, false, 6*4, 0L)
 
-        var colAttrib = glGetAttribLocation(doverlayShader.program, "color")
+        var colAttrib = glGetAttribLocation(doverlayShader!!.program, "color")
         glEnableVertexAttribArray(colAttrib)
         glVertexAttribPointer(colAttrib, 4, GL_FLOAT, false, 6*4, 2*4L)
 
@@ -79,19 +81,19 @@ object GuiRenderer {
         val gfrag = FragmentShader(File("shader", "gui.frag"))
 
         guiShader = ShaderProgram(gvert, gfrag)
-        guiShader.use()
+        guiShader!!.use()
 
-        guiProj = glGetUniformLocation(guiShader.program, "proj")
+        guiProj = glGetUniformLocation(guiShader!!.program, "proj")
 
-        var gposAttrib = glGetAttribLocation(guiShader.program, "position")
+        var gposAttrib = glGetAttribLocation(guiShader!!.program, "position")
         glEnableVertexAttribArray(gposAttrib)
         glVertexAttribPointer(gposAttrib, 2, GL_FLOAT, false, 7 * 4, 0L)
 
-        var gcolorAttrib = glGetAttribLocation(guiShader.program, "color")
+        var gcolorAttrib = glGetAttribLocation(guiShader!!.program, "color")
         glEnableVertexAttribArray(gcolorAttrib)
         glVertexAttribPointer(gcolorAttrib, 3, GL_FLOAT, false, 7 * 4, (2 * 4))
 
-        var gtexAttrib = glGetAttribLocation(guiShader.program, "texcoord")
+        var gtexAttrib = glGetAttribLocation(guiShader!!.program, "texcoord")
         glEnableVertexAttribArray(gtexAttrib)
         glVertexAttribPointer(gtexAttrib, 2, GL_FLOAT, false, 7 * 4, (5 * 4))
 
@@ -101,7 +103,7 @@ object GuiRenderer {
         cvbo = glGenBuffers()
         glBindBuffer(GL_ARRAY_BUFFER, cvbo)
 
-        guiShader.use()
+        guiShader!!.use()
 
         glEnableVertexAttribArray(gposAttrib)
         glVertexAttribPointer(gposAttrib, 2, GL_FLOAT, false, 7 * 4, 0L)
@@ -111,6 +113,7 @@ object GuiRenderer {
 
         glEnableVertexAttribArray(gtexAttrib)
         glVertexAttribPointer(gtexAttrib, 2, GL_FLOAT, false, 7 * 4, (5 * 4))
+        hasInitialized = true
     }
 
     fun updateScreenMouse(x: Float, y: Float) {
@@ -120,6 +123,8 @@ object GuiRenderer {
     }
 
     fun updateWindowSize(w: Float, h: Float) {
+        if(!hasInitialized)
+            return
         this.wWidth = w
         this.wHeight = h
         crosshair = floatArrayOf(
@@ -144,7 +149,7 @@ object GuiRenderer {
     }
 
     fun renderCrosshair(proj: Matrix4f) {
-        guiShader.use()
+        guiShader!!.use()
         ctex!!.use()
         glBindVertexArray(cvao)
         glBindBuffer(GL_ARRAY_BUFFER, cvbo)
@@ -162,7 +167,7 @@ object GuiRenderer {
     }
 
     fun renderDoverlay() {
-        doverlayShader.use()
+        doverlayShader!!.use()
         glDisable(GL_TEXTURE)
         glBindVertexArray(dvao)
         glBindBuffer(GL_ARRAY_BUFFER, dvbo)
