@@ -17,7 +17,7 @@ class DensityGenerator : IGenerator {
         gen.frequency = 0.25
         gen.persistence = 0.35
         gen.seed = world.getSeed()
-        formation.seed = world.getSeed()
+        formation.seed = world.getSeed().xor(0xFACEBEEF.toInt())
         formation.frequency = 0.125
         for (x in 0..15) {
             for (z in 0..15) {
@@ -26,19 +26,23 @@ class DensityGenerator : IGenerator {
                 var maxHeight = 64
                 var h = gen.getValue(nX, 0.0, nZ)
                 h -= 0.75
-                h *= 4
+                h *= 2.5
                 maxHeight += (h * 64.0).toInt()
                 maxHeight = max(32, min(maxHeight, 127))
                 for (y in 0..maxHeight) {
-                    var density = formation.getValue(nX, y.toDouble(), nZ)
-                    density -= 0.85
+                    var density = formation.getValue(nX/8.0, y.toDouble(), nZ/8.0)
+                    density /= 8
+                    density += ((64 - maxHeight) / 32.0)
                     var tile = TileState(BlockRegistration.AIR)
                     if(density >= 0)  {
-                        tile = TileState(BlockRegistration.STONE)
+                        tile = if(y == maxHeight) {
+                            TileState(BlockRegistration.GRASS)
+                        } else {
+                            TileState(BlockRegistration.STONE)
+                        }
                     }
                     world.setTileAtAdjusted(cX, cZ, x, y, z, TilePalette.getTileRepresentation(tile))
                 }
-                world.setTileAtAdjusted(cX, cZ, x, maxHeight, z, TilePalette.getTileRepresentation(TileState(BlockRegistration.GRASS)))
                 /*for (y in -1 downTo -5) {
                     world.setTileAtAdjusted(cX, cZ, x, maxHeight + y, z, TilePalette.getTileRepresentation(TileState(BlockRegistration.DIRT)))
                 }*/
