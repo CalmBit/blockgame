@@ -9,11 +9,12 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import org.lwjgl.opengl.GL31
+import util.ChunkPosition
 import java.util.*
 import kotlin.random.Random
 
 class World(val window: Long, prog: ShaderProgram) {
-    private var _chunks: MutableMap<Pair<Int, Int>, Chunk> = mutableMapOf()
+    private var _chunks: MutableMap<ChunkPosition, Chunk> = mutableMapOf()
     private var _seed: Int = Random.nextInt(Int.MAX_VALUE)
     var random = Random(_seed)
     val maxX = 8
@@ -25,15 +26,16 @@ class World(val window: Long, prog: ShaderProgram) {
     val renderChunkMutex: Mutex = Mutex()
     val renderChunkQueue: Queue<RenderChunkBatch> = ArrayDeque<RenderChunkBatch>((maxX*2)*(maxZ*2))
     val bindChunkQueue: Queue<BindChunkBatch> = ArrayDeque<BindChunkBatch>((maxX*2)*(maxZ*2))
-    val lazyChunkQueue: Queue<Pair<Int, Int>> = ArrayDeque<Pair<Int, Int>>((maxX*2)*(maxZ*2))
+    val lazyChunkQueue: Queue<ChunkPosition> = ArrayDeque<ChunkPosition>((maxX*2)*(maxZ*2))
 
     val worldType: WorldType = WorldType.DEFAULT
 
     init {
         for(x in -maxX until maxX) {
             for(z in -maxX until maxZ) {
-                addChunk(Pair(x,z))
-                generateChunkQueue.offer(_chunks[Pair(x,z)])
+                val cPos = ChunkPosition.getChunkPosition(x,z)
+                addChunk(cPos)
+                generateChunkQueue.offer(_chunks[cPos])
             }
         }
 
@@ -50,14 +52,14 @@ class World(val window: Long, prog: ShaderProgram) {
                         }
                         c.generate(world)
                         decorateChunkMutex.lock()
-                        if(world._chunks[Pair(c.cX-1, c.cZ)] != null && !world._chunks[Pair(c.cX-1, c.cZ)]!!.hasDecorated) {
-                            decorateChunkQueue.offer(world._chunks[Pair(c.cX-1, c.cZ)])
+                        if(world._chunks[ChunkPosition.getChunkPosition(c.cX-1, c.cZ)] != null && !world._chunks[ChunkPosition.getChunkPosition(c.cX-1, c.cZ)]!!.hasDecorated) {
+                            decorateChunkQueue.offer(world._chunks[ChunkPosition.getChunkPosition(c.cX-1, c.cZ)])
                         }
-                        if(world._chunks[Pair(c.cX, c.cZ-1)] != null && !world._chunks[Pair(c.cX, c.cZ-1)]!!.hasDecorated) {
-                            decorateChunkQueue.offer(world._chunks[Pair(c.cX, c.cZ - 1)])
+                        if(world._chunks[ChunkPosition.getChunkPosition(c.cX, c.cZ-1)] != null && !world._chunks[ChunkPosition.getChunkPosition(c.cX, c.cZ-1)]!!.hasDecorated) {
+                            decorateChunkQueue.offer(world._chunks[ChunkPosition.getChunkPosition(c.cX, c.cZ - 1)])
                         }
-                        if(world._chunks[Pair(c.cX-1, c.cZ-1)] != null && !world._chunks[Pair(c.cX-1, c.cZ-1)]!!.hasDecorated) {
-                            decorateChunkQueue.offer(world._chunks[Pair(c.cX - 1, c.cZ - 1)])
+                        if(world._chunks[ChunkPosition.getChunkPosition(c.cX-1, c.cZ-1)] != null && !world._chunks[ChunkPosition.getChunkPosition(c.cX-1, c.cZ-1)]!!.hasDecorated) {
+                            decorateChunkQueue.offer(world._chunks[ChunkPosition.getChunkPosition(c.cX - 1, c.cZ - 1)])
                         }
                         decorateChunkMutex.unlock()
                         renderChunkMutex.lock()
@@ -84,9 +86,9 @@ class World(val window: Long, prog: ShaderProgram) {
                             continue
                         }
                         try {
-                            if (world._chunks[Pair(c.cX + 1, c.cZ)]!!.hasGenerated
-                                && world._chunks[Pair(c.cX, c.cZ + 1)]!!.hasGenerated
-                                && world._chunks[Pair(c.cX + 1, c.cZ + 1)]!!.hasGenerated
+                            if (world._chunks[ChunkPosition.getChunkPosition(c.cX + 1, c.cZ)]!!.hasGenerated
+                                && world._chunks[ChunkPosition.getChunkPosition(c.cX, c.cZ + 1)]!!.hasGenerated
+                                && world._chunks[ChunkPosition.getChunkPosition(c.cX + 1, c.cZ + 1)]!!.hasGenerated
                             ) {
                                 c.decorate(world)
                                 renderChunkMutex.lock()
@@ -134,9 +136,9 @@ class World(val window: Long, prog: ShaderProgram) {
                             for(x in -1..1) {
                                 for(z in -1..1) {
                                     if(x == 0 && z == 0) continue
-                                    if(world._chunks.containsKey(Pair(c.cX+x, c.cZ+z)) && !c.dirty) {
+                                    if(world._chunks.containsKey(ChunkPosition.getChunkPosition(c.cX+x, c.cZ+z)) && !c.dirty) {
                                         renderChunkMutex.lock()
-                                        renderChunkQueue.offer(RenderChunkBatch(world._chunks[Pair(c.cX+x, c.cZ+z)]!!, false))
+                                        renderChunkQueue.offer(RenderChunkBatch(world._chunks[ChunkPosition.getChunkPosition(c.cX+x, c.cZ+z)]!!, false))
                                         renderChunkMutex.unlock()
                                     }
                                 }
@@ -165,7 +167,7 @@ class World(val window: Long, prog: ShaderProgram) {
     }
 
     fun getTileAt(x: Int, y: Int, z: Int): TileState? {
-        var cPos = Pair(x shr 4, z shr 4)
+        var cPos = ChunkPosition.getChunkPosition(x shr 4, z shr 4)
 
         if(_chunks.containsKey(cPos)) {
             var c = _chunks[cPos]
@@ -179,7 +181,7 @@ class World(val window: Long, prog: ShaderProgram) {
     }
 
     private fun setTileAt(x: Int, y: Int, z: Int, tile: Int) {
-        var cPos = Pair(x shr 4, z shr 4)
+        var cPos = ChunkPosition.getChunkPosition(x shr 4, z shr 4)
         if(_chunks.containsKey(cPos)) {
             _chunks[cPos]?.setTileAt(x and 15, y,z and 15, tile)
         } else {
@@ -197,7 +199,7 @@ class World(val window: Long, prog: ShaderProgram) {
     }
 
     fun getTopTilePos(x: Int, z: Int): Int {
-        var cPos = Pair(x shr 4, z shr 4)
+        var cPos = ChunkPosition.getChunkPosition(x shr 4, z shr 4)
         if(_chunks.containsKey(cPos)) {
             var y = 127
             while(_chunks[cPos]!!.getTileAt(x and 15, y,z and 15)!!.block == BlockRegistry.AIR)
@@ -222,12 +224,12 @@ class World(val window: Long, prog: ShaderProgram) {
         return (chunk shl 4) + position
     }
 
-    fun chunkExists(cPos: Pair<Int, Int>): Boolean {
+    fun chunkExists(cPos: ChunkPosition): Boolean {
         return _chunks.containsKey(cPos)
     }
 
-    fun addChunk(cPos: Pair<Int, Int>): Chunk {
-        val c = Chunk(this, cPos.first, cPos.second)
+    fun addChunk(cPos: ChunkPosition): Chunk {
+        val c = Chunk(this, cPos.x, cPos.z)
         c.isLoaded = true
         _chunks[cPos] = c
         return c

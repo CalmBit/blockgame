@@ -13,6 +13,7 @@ import org.lwjgl.stb.STBImageWrite
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryUtil.NULL
 import render.*
+import util.ChunkPosition
 import world.World
 import java.io.File
 import java.text.SimpleDateFormat
@@ -348,8 +349,8 @@ class Window {
 
                 for (x in px - 4..px + 4) {
                     for (z in pz - 4..pz + 4) {
-                        if (!world!!.chunkExists(Pair(x, z))) {
-                            world!!.lazyChunkQueue.offer(Pair(x, z))
+                        if (!world!!.chunkExists(ChunkPosition.getChunkPosition(x, z))) {
+                            world!!.lazyChunkQueue.offer(ChunkPosition.getChunkPosition(x, z))
                         }
                     }
                 }
