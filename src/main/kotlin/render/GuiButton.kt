@@ -96,7 +96,7 @@ class GuiButton(val pos: Vector2f) : GuiBase() {
 
         glDrawArrays(GL_TRIANGLES, 0, 6)
 
-        FontRenderer.renderWithShadowImmediate(proj, pos.x + ((128 - (FontRenderer.getStringWidth("ur gay", 1.0f)))/2.0f), pos.y + 6.0f, "ur gay", 1.0f)
+        Window.FONT_RENDERER.renderWithShadowImmediate(proj, pos.x + ((128 - (Window.FONT_RENDERER.getStringWidth("ur gay", 1.0f)))/2.0f), pos.y + 6.0f, "ur gay", 1.0f)
     }
 
     override fun mouseMovement(x: Float, y: Float) {

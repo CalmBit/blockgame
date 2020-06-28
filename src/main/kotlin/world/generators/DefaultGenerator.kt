@@ -1,11 +1,10 @@
 package world.generators
 
-import block.BlockRegistration
+import block.BlockRegistry
 import block.TilePalette
 import block.TileState
 import org.spongepowered.noise.Noise
 import org.spongepowered.noise.NoiseQuality
-import world.Chunk
 import world.World
 import world.generators.decorators.DungeonDecorator
 import world.generators.decorators.IDecorator
@@ -18,17 +17,21 @@ class DefaultGenerator : IGenerator {
 
     companion object {
         var _decorators : MutableList<IDecorator> = mutableListOf()
-        val REPLACE_ONLY_STONE = {t: TileState -> t.block == BlockRegistration.STONE}
-        val REPLACE_NOT_WATER = {t: TileState -> t.block != BlockRegistration.WATER && t.block != BlockRegistration.AIR}
-        val STAY_ON_GRASS = {t: TileState -> t.block != BlockRegistration.GRASS}
+        val REPLACE_ONLY_STONE = {t: TileState -> t.block == BlockRegistry.STONE}
+        val REPLACE_NOT_WATER = {t: TileState -> t.block != BlockRegistry.WATER && t.block != BlockRegistry.AIR}
+        val STAY_ON_GRASS = {t: TileState -> t.block != BlockRegistry.GRASS}
         init {
-            _decorators.add(TreeDecorator(TileState(BlockRegistration.LOG), TileState(BlockRegistration.LEAVES), 3, STAY_ON_GRASS))
-            _decorators.add(TreeDecorator(TileState(BlockRegistration.BIRCH_LOG), TileState(BlockRegistration.BIRCH_LEAVES), 1, STAY_ON_GRASS))
-            _decorators.add(OreDecorator(TileState(BlockRegistration.COAL_ORE), 12, 12, 78, 20, REPLACE_ONLY_STONE ))
-            _decorators.add(OreDecorator(TileState(BlockRegistration.IRON_ORE), 8, 4, 64, 12, REPLACE_ONLY_STONE))
-            _decorators.add(OreDecorator(TileState(BlockRegistration.GOLD_ORE), 4, 4, 32, 8, REPLACE_ONLY_STONE))
-            _decorators.add(OreDecorator(TileState(BlockRegistration.DIAMOND_ORE), 6, 4, 16, 8, REPLACE_ONLY_STONE))
-            _decorators.add(OreDecorator(TileState(BlockRegistration.AIR), 6, 4, 64, 64, REPLACE_ONLY_STONE))
+            _decorators.add(TreeDecorator(
+                TileState(BlockRegistry.LOG),
+                TileState(BlockRegistry.LEAVES), 3, STAY_ON_GRASS))
+            _decorators.add(TreeDecorator(
+                TileState(BlockRegistry.BIRCH_LOG),
+                TileState(BlockRegistry.BIRCH_LEAVES), 1, STAY_ON_GRASS))
+            _decorators.add(OreDecorator(TileState(BlockRegistry.COAL_ORE), 12, 12, 78, 20, REPLACE_ONLY_STONE ))
+            _decorators.add(OreDecorator(TileState(BlockRegistry.IRON_ORE), 8, 4, 64, 12, REPLACE_ONLY_STONE))
+            _decorators.add(OreDecorator(TileState(BlockRegistry.GOLD_ORE), 4, 4, 32, 8, REPLACE_ONLY_STONE))
+            _decorators.add(OreDecorator(TileState(BlockRegistry.DIAMOND_ORE), 6, 4, 16, 8, REPLACE_ONLY_STONE))
+            _decorators.add(OreDecorator(TileState(BlockRegistry.AIR), 6, 4, 64, 64, REPLACE_ONLY_STONE))
             _decorators.add(DungeonDecorator(2, 16, 32))
         }
     }
@@ -50,24 +53,27 @@ class DefaultGenerator : IGenerator {
                     height = Math.max(32, Math.min(height, 127))
                     var sandy = height < 70
                     var water = height < 64
-                    var tile = TileState(BlockRegistration.AIR)
+                    var tile = TileState(BlockRegistry.AIR)
                     if (water) {
                         tile =
                             when (y) {
                                 in 65..127 -> tile
-                                in height..64 -> TileState(BlockRegistration.WATER)
-                                in height-5 until height -> TileState(BlockRegistration.SAND)
-                                else -> TileState(BlockRegistration.STONE)
+                                in height..64 -> TileState(BlockRegistry.WATER)
+                                in height-5 until height -> TileState(BlockRegistry.SAND)
+                                else -> TileState(BlockRegistry.STONE)
                             }
                     } else {
                         tile =
                             when (y) {
                                 in height + 1..127 -> tile
-                                height -> if(sandy) TileState(BlockRegistration.SAND) else TileState(BlockRegistration.GRASS)
-                                in height - 5 until height -> if(sandy) TileState(BlockRegistration.SAND) else TileState(
-                                    BlockRegistration.DIRT)
+                                height -> if(sandy) TileState(BlockRegistry.SAND) else TileState(
+                                    BlockRegistry.GRASS
+                                )
+                                in height - 5 until height -> if(sandy) TileState(BlockRegistry.SAND) else TileState(
+                                    BlockRegistry.DIRT
+                                )
                                 else -> {
-                                    TileState(BlockRegistration.STONE)
+                                    TileState(BlockRegistry.STONE)
                                 }
                             }
                     }
@@ -78,7 +84,9 @@ class DefaultGenerator : IGenerator {
 
         for (x in 0..15) {
             for (z in 0..15) {
-                world.setTileAtAdjusted(cX, cZ, x, 0, z, TilePalette.getTileRepresentation(TileState(BlockRegistration.BORDERSTONE)))
+                world.setTileAtAdjusted(cX, cZ, x, 0, z, TilePalette.getTileRepresentation(
+                    TileState(BlockRegistry.BORDERSTONE)
+                ))
             }
         }
     }

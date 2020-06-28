@@ -1,11 +1,10 @@
 package world.generators
 
-import block.BlockRegistration
+import block.BlockRegistry
 import block.TilePalette
 import block.TileState
 import org.spongepowered.noise.Noise
 import org.spongepowered.noise.NoiseQuality
-import world.Chunk
 import world.World
 import world.generators.decorators.IDecorator
 import world.generators.decorators.OreDecorator
@@ -16,15 +15,17 @@ class HellGenerator : IGenerator {
 
     companion object {
         var _decorators : MutableList<IDecorator> = mutableListOf()
-        val REPLACE_ONLY_STONE = {t: TileState -> t.block == BlockRegistration.STONE}
-        val REPLACE_NOT_WATER = {t: TileState -> t.block != BlockRegistration.WATER && t.block != BlockRegistration.AIR}
-        val STAY_ON_DIRT = {t: TileState -> t.block != BlockRegistration.DIRT}
+        val REPLACE_ONLY_STONE = {t: TileState -> t.block == BlockRegistry.STONE}
+        val REPLACE_NOT_WATER = {t: TileState -> t.block != BlockRegistry.WATER && t.block != BlockRegistry.AIR}
+        val STAY_ON_DIRT = {t: TileState -> t.block != BlockRegistry.DIRT}
         init {
-            _decorators.add(TreeDecorator(TileState(BlockRegistration.LOG), TileState(BlockRegistration.AIR), 4, STAY_ON_DIRT))
-            _decorators.add(OreDecorator(TileState(BlockRegistration.COAL_ORE), 12, 12, 78, 20, REPLACE_ONLY_STONE ))
-            _decorators.add(OreDecorator(TileState(BlockRegistration.IRON_ORE), 8, 4, 64, 12, REPLACE_ONLY_STONE))
-            _decorators.add(OreDecorator(TileState(BlockRegistration.GOLD_ORE), 4, 4, 32, 8, REPLACE_ONLY_STONE))
-            _decorators.add(OreDecorator(TileState(BlockRegistration.DIAMOND_ORE), 6, 4, 16, 8, REPLACE_ONLY_STONE))
+            _decorators.add(TreeDecorator(
+                TileState(BlockRegistry.LOG),
+                TileState(BlockRegistry.AIR), 4, STAY_ON_DIRT))
+            _decorators.add(OreDecorator(TileState(BlockRegistry.COAL_ORE), 12, 12, 78, 20, REPLACE_ONLY_STONE ))
+            _decorators.add(OreDecorator(TileState(BlockRegistry.IRON_ORE), 8, 4, 64, 12, REPLACE_ONLY_STONE))
+            _decorators.add(OreDecorator(TileState(BlockRegistry.GOLD_ORE), 4, 4, 32, 8, REPLACE_ONLY_STONE))
+            _decorators.add(OreDecorator(TileState(BlockRegistry.DIAMOND_ORE), 6, 4, 16, 8, REPLACE_ONLY_STONE))
         }
     }
 
@@ -44,27 +45,27 @@ class HellGenerator : IGenerator {
                     height = Math.max(32, Math.min(height, 127))
                     var sandy = height < 54
                     var water = height < 48
-                    var tile = TileState(BlockRegistration.AIR)
+                    var tile = TileState(BlockRegistry.AIR)
                     if (water) {
                         tile =
                             when (y) {
                                 in 49..127 -> tile
-                                in height..48 -> TileState(BlockRegistration.LAVA)
-                                in height-5 until height -> TileState(BlockRegistration.LAVA_OBSIDIAN)
-                                else -> TileState(BlockRegistration.STONE)
+                                in height..48 -> TileState(BlockRegistry.LAVA)
+                                in height-5 until height -> TileState(BlockRegistry.LAVA_OBSIDIAN)
+                                else -> TileState(BlockRegistry.STONE)
                             }
                     } else {
                         tile =
                             when (y) {
                                 in height + 1..127 -> tile
-                                height -> if(height in 48..49) TileState((BlockRegistration.LAVA_OBSIDIAN))
-                                    else if(sandy) TileState(BlockRegistration.OBSIDIAN)
-                                    else TileState(BlockRegistration.DIRT)
-                                in height - 5 until height -> if(y in 48..49) TileState((BlockRegistration.LAVA_OBSIDIAN))
-                                    else if(sandy) TileState(BlockRegistration.OBSIDIAN)
-                                    else TileState(BlockRegistration.DIRT)
+                                height -> if(height in 48..49) TileState((BlockRegistry.LAVA_OBSIDIAN))
+                                    else if(sandy) TileState(BlockRegistry.OBSIDIAN)
+                                    else TileState(BlockRegistry.DIRT)
+                                in height - 5 until height -> if(y in 48..49) TileState((BlockRegistry.LAVA_OBSIDIAN))
+                                    else if(sandy) TileState(BlockRegistry.OBSIDIAN)
+                                    else TileState(BlockRegistry.DIRT)
                                 else -> {
-                                    TileState(BlockRegistration.STONE)
+                                    TileState(BlockRegistry.STONE)
                                 }
                             }
                     }
@@ -75,7 +76,9 @@ class HellGenerator : IGenerator {
 
         for (x in 0..15) {
             for (z in 0..15) {
-                world.setTileAtAdjusted(cX, cZ, x, 0, z, TilePalette.getTileRepresentation(TileState(BlockRegistration.BORDERSTONE)))
+                world.setTileAtAdjusted(cX, cZ, x, 0, z, TilePalette.getTileRepresentation(
+                    TileState(BlockRegistry.BORDERSTONE)
+                ))
             }
         }
     }

@@ -1,13 +1,14 @@
 package world
 
-import block.BlockRegistration
-import block.RenderType
+import block.BlockRegistry
+import block.EnumRenderLayer
 import block.TileState
 import gl.ShaderProgram
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
+import org.lwjgl.opengl.GL31
 import java.util.*
 import kotlin.random.Random
 
@@ -126,7 +127,7 @@ class World(val window: Long, prog: ShaderProgram) {
                         renderChunkMutex.unlock()
 
 
-                        for (l in RenderType.values) {
+                        for (l in EnumRenderLayer.VALUES) {
                             bindChunkQueue.offer(BindChunkBatch(c, c.buildRenderData(world, l), l))
                         }
                         if(r) {
@@ -150,10 +151,10 @@ class World(val window: Long, prog: ShaderProgram) {
 
     fun draw(uniTrans: Int, timer: Float) {
         _chunks.forEach { (_, c) ->
-            c.draw(RenderType.NORMAL, uniTrans, timer)
+            c.draw(EnumRenderLayer.NORMAL, uniTrans, timer)
         }
         _chunks.forEach { (_, c) ->
-            c.draw(RenderType.TRANSLUCENT, uniTrans, timer)
+            c.draw(EnumRenderLayer.TRANSLUCENT, uniTrans, timer)
         }
     }
 
@@ -199,7 +200,7 @@ class World(val window: Long, prog: ShaderProgram) {
         var cPos = Pair(x shr 4, z shr 4)
         if(_chunks.containsKey(cPos)) {
             var y = 127
-            while(_chunks[cPos]!!.getTileAt(x and 15, y,z and 15)!!.block == BlockRegistration.AIR)
+            while(_chunks[cPos]!!.getTileAt(x and 15, y,z and 15)!!.block == BlockRegistry.AIR)
             {
                 y--
             }
@@ -236,5 +237,9 @@ class World(val window: Long, prog: ShaderProgram) {
         _chunks.forEach { (_, c) ->
             c.tick(this)
         }
+    }
+
+    fun chunkCount(): Int {
+        return _chunks.size
     }
 }

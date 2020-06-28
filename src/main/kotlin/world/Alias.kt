@@ -1,6 +1,7 @@
 package world
 
-import block.RenderType
+import block.EnumRenderLayer
+import util.FloatList
 
 typealias RenderChunkBatch = Pair<Chunk, Boolean>
-typealias BindChunkBatch = Triple<Chunk, MutableList<MutableList<Float>>, RenderType>
+typealias BindChunkBatch = Triple<Chunk, MutableList<FloatList>, EnumRenderLayer>

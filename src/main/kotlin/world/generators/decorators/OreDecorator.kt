@@ -1,10 +1,9 @@
 package world.generators.decorators
 
-import block.BlockRegistration
+import block.BlockRegistry
 import block.TilePalette
 import block.TileState
 import world.World
-import kotlin.random.Random
 
 class OreDecorator(val ore: TileState, val chances: Int, val minY: Int, val maxY: Int, val veinSize: Int, val replacePredicate: (TileState) -> Boolean,
                    val scaleFail: Boolean = true) : IDecorator {
@@ -19,7 +18,7 @@ class OreDecorator(val ore: TileState, val chances: Int, val minY: Int, val maxY
             if(world.getTileAtAdjusted(cX, cZ, x, y, z) == null) {
                 world.getTileAtAdjusted(cX, cZ, x, y, z)
             }
-            if (world.getTileAtAdjusted(cX, cZ, x, y, z)!!.block != BlockRegistration.STONE) continue
+            if (world.getTileAtAdjusted(cX, cZ, x, y, z)!!.block != BlockRegistry.STONE) continue
             world.setTileAtAdjusted(cX, cZ, x, y, z, TilePalette.getTileRepresentation(ore))
 
             var count = 1

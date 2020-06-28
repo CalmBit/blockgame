@@ -1,7 +1,6 @@
 package world
 
-import block.BlockRegistration
-import block.RenderType
+import block.EnumRenderLayer
 import block.TilePalette
 import block.TileState
 import gl.ShaderProgram
@@ -9,18 +8,19 @@ import org.joml.Matrix4f
 import org.lwjgl.opengl.GL31.*
 import org.lwjgl.system.MemoryStack
 import render.ShapeHelper
+import util.FloatList
 import kotlin.random.Random
 
 
 class Region(val rX: Int, val rY: Int, val rZ: Int) {
     private var _region: Array<Int> = Array(16*16*16) { 0 }
-    var vao: Array<Int> = Array(RenderType.values.size) {0}
-    var vbo: Array<Int> = Array(RenderType.values.size) {0}
+    var vao: Array<Int> = Array(EnumRenderLayer.VALUES.size) {0}
+    var vbo: Array<Int> = Array(EnumRenderLayer.VALUES.size) {0}
     var trans = Matrix4f()
-    var vertSize: Array<Int> = Array(RenderType.values.size) {0}
+    var vertSize: Array<Int> = Array(EnumRenderLayer.VALUES.size) {0}
 
     init {
-        for(l in RenderType.values) {
+        for(l in EnumRenderLayer.VALUES) {
             vao[l.ordinal] = glGenVertexArrays()
             glBindVertexArray(vao[l.ordinal])
             vbo[l.ordinal] = glGenBuffers()
@@ -31,8 +31,8 @@ class Region(val rX: Int, val rY: Int, val rZ: Int) {
             .translate(rX*16.0f, rY*16.0f, rZ * 16.0f)
     }
 
-    fun buildRenderData(world: World, cX: Int, cZ: Int, l: RenderType): MutableList<Float> {
-        var verts: MutableList<Float> = mutableListOf()
+    fun buildRenderData(world: World, cX: Int, cZ: Int, l: EnumRenderLayer): FloatList {
+        val verts = FloatList()
         for (y in 0..15) {
             for (z in 0..15) {
                 for (x in 0..15) {
@@ -45,11 +45,11 @@ class Region(val rX: Int, val rY: Int, val rZ: Int) {
         return verts
     }
 
-    fun bindData(verts: MutableList<Float>, l: RenderType,  prog: ShaderProgram) {
-        vertSize[l.ordinal] = verts.size
+    fun bindData(verts: FloatList, l: EnumRenderLayer, prog: ShaderProgram) {
+        vertSize[l.ordinal] = verts.length
         glBindVertexArray(vao[l.ordinal])
         glBindBuffer(GL_ARRAY_BUFFER, vbo[l.ordinal])
-        glBufferData(GL_ARRAY_BUFFER, verts.toFloatArray(), GL_STATIC_DRAW)
+        glBufferData(GL_ARRAY_BUFFER, verts.store, GL_STATIC_DRAW)
         setupAttribs(vao[l.ordinal], vbo[l.ordinal], prog)
     }
 
@@ -59,7 +59,7 @@ class Region(val rX: Int, val rY: Int, val rZ: Int) {
         _region[(y*(16*16))+(z*16)+x] = tile
     }
 
-    fun draw(l: RenderType, uniTrans: Int, timer: Float) {
+    fun draw(l: EnumRenderLayer, uniTrans: Int, timer: Float) {
         var stack: MemoryStack? = null
         try {
             if(vertSize[l.ordinal] == 0) return
@@ -79,15 +79,15 @@ class Region(val rX: Int, val rY: Int, val rZ: Int) {
 
         prog.use()
 
-        var posAttrib = glGetAttribLocation(prog.program, "position")
+        var posAttrib = glGetAttribLocation(prog.getProgram(), "position")
         glEnableVertexAttribArray(posAttrib)
         glVertexAttribPointer(posAttrib, 3, GL_FLOAT, false, 8*4, 0L)
 
-        var colAttrib = glGetAttribLocation(prog.program, "color")
+        var colAttrib = glGetAttribLocation(prog.getProgram(), "color")
         glEnableVertexAttribArray(colAttrib)
         glVertexAttribPointer(colAttrib, 3, GL_FLOAT, false, 8*4, 3*4L)
 
-        var texAttrib = glGetAttribLocation(prog.program, "texcoord")
+        var texAttrib = glGetAttribLocation(prog.getProgram(), "texcoord")
         glEnableVertexAttribArray(texAttrib)
         glVertexAttribPointer(texAttrib, 2, GL_FLOAT, false, 8*4, 6*4L)
     }

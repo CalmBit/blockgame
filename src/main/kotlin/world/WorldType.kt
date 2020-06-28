@@ -7,7 +7,7 @@ enum class WorldType(val atmoColor: Vector3f, val skyColor: Vector3f, val voidCo
     DEFAULT(Vector3f(0.529f, 0.808f, 0.980f),
         Vector3f(0.000f, 0.749f, 1.000f),
         Vector3f(0.118f, 0.565f, 1.000f),
-        DensityGenerator(),
+        DefaultGenerator(),
         1.0f),
     HELL(Vector3f(0.698f, 0.133f, 0.133f),
         Vector3f(0.545f, 0.000f, 0.000f),

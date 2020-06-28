@@ -2,19 +2,20 @@ package render
 
 import block.EnumDirection
 import block.TileState
+import util.FloatList
 import world.World
 
 object ShapeHelper {
     var uvSize = 0.0625f
     var offset = 0.00048828125f
 
-    fun appendToMutList(arr: MutableList<Float>, vararg els: Float) {
+    fun appendToMutList(arr: FloatList, vararg els: Float) {
         for(v in els) {
-            arr.add(v)
+            arr.append(v)
         }
     }
 
-    fun appendVerts(world: World, cX: Int, cZ: Int, rY: Int, x: Int, y: Int, z: Int, tileState: TileState, arr: MutableList<Float>) {
+    fun appendVerts(world: World, cX: Int, cZ: Int, rY: Int, x: Int, y: Int, z: Int, tileState: TileState, arr: FloatList) {
         val side = tileState.getUVForFace(EnumDirection.NORTH)
         val u = side.u
         val v = side.v

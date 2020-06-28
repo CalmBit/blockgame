@@ -1,4 +1,5 @@
 import client.Camera
+import client.ViewProj
 import gl.*
 import kotlinx.coroutines.runBlocking
 import org.joml.Matrix4f
@@ -7,7 +8,6 @@ import org.lwjgl.glfw.Callbacks.glfwFreeCallbacks
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.glfw.GLFWErrorCallback
 import org.lwjgl.opengl.GL
-import org.lwjgl.opengl.GL11
 import org.lwjgl.opengl.GL31.*
 import org.lwjgl.stb.STBImageWrite
 import org.lwjgl.system.MemoryStack
@@ -15,7 +15,6 @@ import org.lwjgl.system.MemoryUtil.NULL
 import render.*
 import world.World
 import java.io.File
-import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.time.Duration
 import java.time.Instant
@@ -50,15 +49,19 @@ class Window {
 
     var camera = Camera()
 
-    var view = Matrix4f()
-    var proj = Matrix4f()
+    var viewproj: ViewProj = ViewProj(Matrix4f(), Matrix4f())
+    var proj: Matrix4f = Matrix4f()
 
     val filedf = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS")
 
-    var keyStates: Array<Boolean> = Array(GLFW_KEY_LAST+1) {false}
+    var keyStates: BooleanArray = BooleanArray(GLFW_KEY_LAST+1) {false}
 
     var firstGenDone = false
     var loadScreen = GuiLoadingScreen()
+
+    companion object {
+        lateinit var FONT_RENDERER: FontRenderer
+    }
 
     fun run() {
         Logger.logger.debug("[RUN]")
@@ -103,6 +106,9 @@ class Window {
                 }
             else if(key == GLFW_KEY_R && action == GLFW_RELEASE) {
                 texUse = !texUse
+            }
+            else if(key == GLFW_KEY_G && action == GLFW_RELEASE) {
+                System.gc();
             }
             else if(key == GLFW_KEY_F2 && action == GLFW_RELEASE) {
                 var b = BufferUtils.createByteBuffer(fWidth*fHeight*3)
@@ -191,6 +197,7 @@ class Window {
         glEnable(GL_CULL_FACE)
         glEnable(GL_BLEND)
 
+        FONT_RENDERER = FontRenderer();
         GuiRenderer.init()
 
         tex = Texture(File("texture", "terrain.png"))
@@ -205,10 +212,10 @@ class Window {
 
         prog!!.use()
 
-        uniTrans = glGetUniformLocation(prog!!.program, "model")
-        uniView = glGetUniformLocation(prog!!.program, "view")
-        uniProj = glGetUniformLocation(prog!!.program, "proj")
-        uniFog = glGetUniformLocation(prog!!.program, "fogColor")
+        uniTrans = glGetUniformLocation(prog!!.getProgram(), "model")
+        uniView = glGetUniformLocation(prog!!.getProgram(), "view")
+        uniProj = glGetUniformLocation(prog!!.getProgram(), "proj")
+        uniFog = glGetUniformLocation(prog!!.getProgram(), "fogColor")
 
         world = World(_window, prog!!)
 
@@ -252,44 +259,50 @@ class Window {
                     ticks++
                 }
 
-                FontRenderer.renderWithShadow(4.0f, 2.0f, "BlockGame pre-062320 (FPS: $fps / TPS: $tps)", 1.0f)
-                FontRenderer.renderWithShadow(
+                FONT_RENDERER.renderWithShadow(4.0f, 2.0f, "BlockGame pre-062320 (FPS: $fps / TPS: $tps)", 1.0f)
+                FONT_RENDERER.renderWithShadow(
                     4.0f,
-                    FontRenderer.font.height * 1.0f + 2.0f,
+                    FONT_RENDERER.font.height * 1.0f + 2.0f,
                     "Position: (X: ${camera.pos.x} / Y: ${camera.pos.y} / Z: ${camera.pos.z}) (Chunk: ${camera.pos.x.toInt() shr 4}, ${camera.pos.z.toInt() shr 4})",
                     1.0f
                 )
-                FontRenderer.renderWithShadow(
+                FONT_RENDERER.renderWithShadow(
                     4.0f,
-                    FontRenderer.font.height * 2.0f + 2.0f,
+                    FONT_RENDERER.font.height * 2.0f + 2.0f,
                     "G: ${world!!.generateChunkQueue.size} / D: ${world!!.decorateChunkQueue.size} / R: ${world!!.renderChunkQueue.size} / B: ${world!!.bindChunkQueue.size}",
                     1.0f
                 )
-                FontRenderer.renderWithShadow(
+                FONT_RENDERER.renderWithShadow(
                     4.0f,
-                    FontRenderer.font.height * 3.0f + 2.0f,
+                    FONT_RENDERER.font.height * 3.0f + 2.0f,
                     "Memory: ${(runtime.totalMemory() - runtime.freeMemory()) / (1024 * 1024)}MB/${runtime.totalMemory() / (1024 * 1024)}MB",
                     1.0f
                 )
-                FontRenderer.renderWithShadow(
+                FONT_RENDERER.renderWithShadow(
                     4.0f,
-                    FontRenderer.font.height * 4.0f + 2.0f,
+                    FONT_RENDERER.font.height * 4.0f + 2.0f,
                     "Seed: ${world!!.getSeed()}",
+                    1.0f
+                )
+                FONT_RENDERER.renderWithShadow(
+                    4.0f,
+                    FONT_RENDERER.font.height * 5.0f + 2.0f,
+                    "Chunks Loaded: ${world!!.chunkCount()}",
                     1.0f
                 )
                 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
-                var (view, proj) = camera.generateViewProj(renderDistance)
+                viewproj = camera.generateViewProj(renderDistance)
 
-                PlaneRenderer.draw(view, proj, camera.pos, camera.pitch, camera.yaw)
+                PlaneRenderer.draw(viewproj.view, viewproj.proj, camera.pos, camera.pitch, camera.yaw)
 
                 prog!!.use()
 
                 var stack: MemoryStack? = null
                 try {
                     stack = MemoryStack.stackPush()
-                    glUniformMatrix4fv(uniView, false, view.get(stack.mallocFloat(16)))
-                    glUniformMatrix4fv(uniProj, false, proj.get(stack.mallocFloat(16)))
+                    glUniformMatrix4fv(uniView, false, viewproj.view.get(stack.mallocFloat(16)))
+                    glUniformMatrix4fv(uniProj, false, viewproj.proj.get(stack.mallocFloat(16)))
                     glUniform3fv(uniFog, atmocolor.get(stack.mallocFloat(3)))
                 } finally {
                     stack?.pop()
@@ -304,7 +317,7 @@ class Window {
 
                 GuiRenderer.renderCrosshair(proj)
 
-                FontRenderer.draw(proj)
+                FONT_RENDERER.draw(proj)
 
                 if (!focused) {
                     GuiRenderer.renderDoverlay()
@@ -364,7 +377,7 @@ class Window {
 
                 proj = Matrix4f().ortho(0.0f, wWidth, wHeight, 0.0f, -1.0f, 10.0f)
 
-                FontRenderer.draw(proj)
+                FONT_RENDERER.draw(proj)
 
                 loadScreen.chunksLeft = world!!.generateChunkQueue.size
 

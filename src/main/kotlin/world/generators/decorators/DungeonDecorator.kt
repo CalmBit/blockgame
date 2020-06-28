@@ -1,6 +1,6 @@
 package world.generators.decorators
 
-import block.BlockRegistration
+import block.BlockRegistry
 import block.TilePalette
 import block.TileState
 import world.World
@@ -36,16 +36,25 @@ class DungeonDecorator(val chances: Int, val minY: Int, val maxY: Int) : IDecora
                     for(k in 0..wid) {
                         if(i==0||i==len||j==0||j==4||k==0||k==wid)
                             if(j==0)
-                                world.setTileAtAdjusted(cX, cZ, x+i, y+j, z+k, TilePalette.getTileRepresentation(if (world.random.nextInt(4) <= 2) TileState(BlockRegistration.MOSS_COBBLE) else TileState(BlockRegistration.COBBLESTONE)))
+                                world.setTileAtAdjusted(cX, cZ, x+i, y+j, z+k, TilePalette.getTileRepresentation(if (world.random.nextInt(4) <= 2) TileState(
+                                    BlockRegistry.MOSS_COBBLE
+                                ) else TileState(BlockRegistry.COBBLESTONE)
+                                ))
                             else
-                                world.setTileAtAdjusted(cX, cZ, x+i, y+j, z+k, TilePalette.getTileRepresentation(TileState(BlockRegistration.COBBLESTONE)))
+                                world.setTileAtAdjusted(cX, cZ, x+i, y+j, z+k, TilePalette.getTileRepresentation(
+                                    TileState(BlockRegistry.COBBLESTONE)
+                                ))
                         else
-                            world.setTileAtAdjusted(cX, cZ, x+i, y+j, z+k, TilePalette.getTileRepresentation(TileState(BlockRegistration.AIR)))
+                            world.setTileAtAdjusted(cX, cZ, x+i, y+j, z+k, TilePalette.getTileRepresentation(
+                                TileState(BlockRegistry.AIR)
+                            ))
                     }
                 }
             }
 
-            world.setTileAtAdjusted(cX, cZ, x+(len/2), y+1, z+(wid/2), TilePalette.getTileRepresentation(TileState(BlockRegistration.MONSTER_SPAWNER)))
+            world.setTileAtAdjusted(cX, cZ, x+(len/2), y+1, z+(wid/2), TilePalette.getTileRepresentation(
+                TileState(BlockRegistry.MONSTER_SPAWNER)
+            ))
         }
     }
 }

@@ -1,11 +1,10 @@
 package world.generators.decorators
 
-import block.BlockRegistration
+import block.BlockRegistry
 import block.TilePalette
 import block.TileState
 import world.World
 import java.lang.Exception
-import kotlin.random.Random
 
 class TreeDecorator(val log: TileState, val leaves: TileState, val chances: Int, val stayPredicate: (TileState) -> Boolean) : IDecorator {
     override fun decorate(world: World, cX: Int, cZ: Int) {
@@ -33,7 +32,7 @@ class TreeDecorator(val log: TileState, val leaves: TileState, val chances: Int,
                                         x + j,
                                         y + i,
                                         z + k
-                                    )?.block != BlockRegistration.AIR
+                                    )?.block != BlockRegistry.AIR
                                 ) continue
                                 world.setTileAtAdjusted(cX, cZ,
                                     x + j,
@@ -51,7 +50,7 @@ class TreeDecorator(val log: TileState, val leaves: TileState, val chances: Int,
                                         x + j,
                                         y + i,
                                         z + k
-                                    )?.block != BlockRegistration.AIR
+                                    )?.block != BlockRegistry.AIR
                                 ) continue
                                 world.setTileAtAdjusted(cX, cZ,
                                     x + j,
@@ -64,46 +63,6 @@ class TreeDecorator(val log: TileState, val leaves: TileState, val chances: Int,
                 }
             }
             world.setTileAtAdjusted(cX, cZ, x, y + height + 1, z, TilePalette.getTileRepresentation(leaves))
-
-
-            /*var count = 1
-
-
-            while (count < veinSize) {
-
-                if(scaleFail && world.random.nextInt(veinSize) < count) {
-                    break
-                }
-
-                var dX = world.random.nextInt(-1, 2)
-                var dY = world.random.nextInt(-1, 2)
-                var dZ = world.random.nextInt(-1, 2)
-
-                if (x + dX < 0 || x + dX > 15) {
-                    dX = 0
-                }
-
-                if (y + dY < 0 || y + dY > 128  || y + dY < minY || y + dY > maxY) {
-                    dY = 0
-                }
-
-                if (z + dZ < 0 || z + dZ > 15) {
-                    dZ = 0
-                }
-
-                if (!replacePredicate(world.getTileAt((cX*16)+x + dX, y +dY, (cZ*16)+z + dZ)!!)) {
-                    dX = 0
-                    dY = 0
-                    dZ = 0
-                }
-
-
-                world.setTileAt((cX*16)+x + dX, y + dY, (cZ*16)+z + dZ, ore)
-                x += dX
-                y += dY
-                z += dZ
-                count++
-            }*/
         }
     }
 }

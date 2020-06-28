@@ -1,13 +1,10 @@
 package world
 
-import block.RenderType
+import block.EnumRenderLayer
 import block.TileState
 import gl.ShaderProgram
 import kotlinx.coroutines.runBlocking
-import world.generators.DefaultGenerator
-import world.generators.HellGenerator
-import world.generators.SkyGenerator
-import kotlin.random.Random
+import util.FloatList
 
 class Chunk(val world: World, val cX: Int, val cZ: Int) {
     private var _regions: Array<Region?> = Array(8) { null }
@@ -43,8 +40,8 @@ class Chunk(val world: World, val cX: Int, val cZ: Int) {
         hasDecorated = true
     }
 
-    fun buildRenderData(world: World, l: RenderType): MutableList<MutableList<Float>> {
-        val verts = mutableListOf<MutableList<Float>>()
+    fun buildRenderData(world: World, l: EnumRenderLayer): MutableList<FloatList> {
+        val verts = mutableListOf<FloatList>()
         for (i in 0 until _regions.size) {
             val v = _regions[i]!!.buildRenderData(world, this.cX, this.cZ, l)
             verts.add(v)
@@ -52,7 +49,7 @@ class Chunk(val world: World, val cX: Int, val cZ: Int) {
         return verts
     }
 
-    fun draw(l: RenderType, uniTrans: Int, timer: Float) {
+    fun draw(l: EnumRenderLayer, uniTrans: Int, timer: Float) {
         for (i in 0 until _regions.size) {
             _regions[i]!!.draw(l, uniTrans, timer)
         }
@@ -77,9 +74,9 @@ class Chunk(val world: World, val cX: Int, val cZ: Int) {
         }
     }
 
-    fun bindRenderData(verts: MutableList<MutableList<Float>>, type: RenderType, prog: ShaderProgram) {
+    fun bindRenderData(verts: MutableList<FloatList>, layer: EnumRenderLayer, prog: ShaderProgram) {
         for (i in 0 until _regions.size) {
-            _regions[i]!!.bindData(verts[i], type, prog)
+            _regions[i]!!.bindData(verts[i], layer, prog)
         }
     }
 

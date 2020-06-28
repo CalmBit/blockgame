@@ -45,13 +45,13 @@ object PlaneRenderer {
 
         planeShader.use()
 
-        planeTrans = glGetUniformLocation(planeShader.program, "model")
-        planeView = glGetUniformLocation(planeShader.program, "view")
-        planeProj = glGetUniformLocation(planeShader.program, "proj")
-        planeColor = glGetUniformLocation(planeShader.program, "color")
-        planeFog = glGetUniformLocation(planeShader.program, "fogColor")
+        planeTrans = glGetUniformLocation(planeShader.getProgram(), "model")
+        planeView = glGetUniformLocation(planeShader.getProgram(), "view")
+        planeProj = glGetUniformLocation(planeShader.getProgram(), "proj")
+        planeColor = glGetUniformLocation(planeShader.getProgram(), "color")
+        planeFog = glGetUniformLocation(planeShader.getProgram(), "fogColor")
 
-        var posAttrib = glGetAttribLocation(planeShader.program, "position")
+        var posAttrib = glGetAttribLocation(planeShader.getProgram(), "position")
         glEnableVertexAttribArray(posAttrib)
         glVertexAttribPointer(posAttrib, 3, GL_FLOAT, false, 3*4, 0L)
     }

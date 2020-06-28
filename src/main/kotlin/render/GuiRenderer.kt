@@ -61,13 +61,13 @@ object GuiRenderer {
         doverlayShader = ShaderProgram(vert, frag)
         doverlayShader!!.use()
 
-        doverlayProj = glGetUniformLocation(doverlayShader!!.program, "proj")
+        doverlayProj = glGetUniformLocation(doverlayShader!!.getProgram(), "proj")
 
-        var posAttrib = glGetAttribLocation(doverlayShader!!.program, "position")
+        var posAttrib = glGetAttribLocation(doverlayShader!!.getProgram(), "position")
         glEnableVertexAttribArray(posAttrib)
         glVertexAttribPointer(posAttrib, 2, GL_FLOAT, false, 6*4, 0L)
 
-        var colAttrib = glGetAttribLocation(doverlayShader!!.program, "color")
+        var colAttrib = glGetAttribLocation(doverlayShader!!.getProgram(), "color")
         glEnableVertexAttribArray(colAttrib)
         glVertexAttribPointer(colAttrib, 4, GL_FLOAT, false, 6*4, 2*4L)
 
@@ -83,17 +83,17 @@ object GuiRenderer {
         guiShader = ShaderProgram(gvert, gfrag)
         guiShader!!.use()
 
-        guiProj = glGetUniformLocation(guiShader!!.program, "proj")
+        guiProj = glGetUniformLocation(guiShader!!.getProgram(), "proj")
 
-        var gposAttrib = glGetAttribLocation(guiShader!!.program, "position")
+        var gposAttrib = glGetAttribLocation(guiShader!!.getProgram(), "position")
         glEnableVertexAttribArray(gposAttrib)
         glVertexAttribPointer(gposAttrib, 2, GL_FLOAT, false, 7 * 4, 0L)
 
-        var gcolorAttrib = glGetAttribLocation(guiShader!!.program, "color")
+        var gcolorAttrib = glGetAttribLocation(guiShader!!.getProgram(), "color")
         glEnableVertexAttribArray(gcolorAttrib)
         glVertexAttribPointer(gcolorAttrib, 3, GL_FLOAT, false, 7 * 4, (2 * 4))
 
-        var gtexAttrib = glGetAttribLocation(guiShader!!.program, "texcoord")
+        var gtexAttrib = glGetAttribLocation(guiShader!!.getProgram(), "texcoord")
         glEnableVertexAttribArray(gtexAttrib)
         glVertexAttribPointer(gtexAttrib, 2, GL_FLOAT, false, 7 * 4, (5 * 4))
 

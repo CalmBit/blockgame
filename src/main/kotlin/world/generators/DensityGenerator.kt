@@ -1,10 +1,8 @@
 package world.generators
 
-import block.BlockRegistration
+import block.BlockRegistry
 import block.TilePalette
 import block.TileState
-import org.spongepowered.noise.Noise
-import org.spongepowered.noise.NoiseQuality
 import org.spongepowered.noise.module.source.Perlin
 import world.World
 import kotlin.math.max
@@ -31,31 +29,32 @@ class DensityGenerator : IGenerator {
                 maxHeight = max(32, min(maxHeight, 127))
                 var avg = 0.0
                 for (y in 0..maxHeight) {
-                    var density = formation.getValue(nX/8.0, y.toDouble(), nZ/8.0)
-                    density += ((64 - maxHeight) / 32.0)
-                    density -= 0.75
-                    avg += density
-                    var tile = TileState(BlockRegistration.AIR)
-                    if(density >= 0)  {
-                        tile = if(y == maxHeight) {
-                            TileState(BlockRegistration.GRASS)
-                        } else {
-                            TileState(BlockRegistration.STONE)
+                    //var density = formation.getValue(nX/8.0, y.toDouble(), nZ/8.0)
+                    //density += ((64 - maxHeight) / 32.0)
+                    //density -= 0.75
+                    //avg += density
+                    var tile = TileState(BlockRegistry.AIR)
+                    //if(density >= 0)  {
+                        if(y == maxHeight) {
+                            tile = TileState(BlockRegistry.GRASS)
+                        } else if(y < maxHeight) {
+                            tile = TileState(BlockRegistry.MOSS_COBBLE)
                         }
-                    }
+                    //}
                     world.setTileAtAdjusted(cX, cZ, x, y, z, TilePalette.getTileRepresentation(tile))
                 }
-                avg /= maxHeight
                 //System.out.println(avg)
                 /*for (y in -1 downTo -5) {
-                    world.setTileAtAdjusted(cX, cZ, x, maxHeight + y, z, TilePalette.getTileRepresentation(TileState(BlockRegistration.DIRT)))
+                    world.setTileAtAdjusted(cX, cZ, x, maxHeight + y, z, TilePalette.getTileRepresentation(TileState(BlockRegistry.DIRT)))
                 }*/
             }
         }
 
         for (x in 0..15) {
             for (z in 0..15) {
-                world.setTileAtAdjusted(cX, cZ, x, 0, z, TilePalette.getTileRepresentation(TileState(BlockRegistration.BORDERSTONE)))
+                world.setTileAtAdjusted(cX, cZ, x, 0, z, TilePalette.getTileRepresentation(
+                    TileState(BlockRegistry.BORDERSTONE)
+                ))
             }
         }
     }
