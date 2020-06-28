@@ -20,6 +20,13 @@ class DefaultGenerator : IGenerator {
         val REPLACE_ONLY_STONE = {t: TileState -> t.block == BlockRegistry.STONE}
         val REPLACE_NOT_WATER = {t: TileState -> t.block != BlockRegistry.WATER && t.block != BlockRegistry.AIR}
         val STAY_ON_GRASS = {t: TileState -> t.block != BlockRegistry.GRASS}
+        val AIR = TileState(BlockRegistry.AIR)
+        val GRASS = TileState(BlockRegistry.GRASS)
+        val STONE = TileState(BlockRegistry.STONE)
+        val SAND = TileState(BlockRegistry.SAND)
+        val WATER = TileState(BlockRegistry.WATER)
+        val DIRT = TileState(BlockRegistry.DIRT)
+        val BORDERSTONE = TileState(BlockRegistry.BORDERSTONE)
         init {
             _decorators.add(TreeDecorator(
                 TileState(BlockRegistry.LOG),
@@ -53,27 +60,23 @@ class DefaultGenerator : IGenerator {
                     height = Math.max(32, Math.min(height, 127))
                     var sandy = height < 70
                     var water = height < 64
-                    var tile = TileState(BlockRegistry.AIR)
+                    var tile = AIR
                     if (water) {
                         tile =
                             when (y) {
                                 in 65..127 -> tile
-                                in height..64 -> TileState(BlockRegistry.WATER)
-                                in height-5 until height -> TileState(BlockRegistry.SAND)
-                                else -> TileState(BlockRegistry.STONE)
+                                in height..64 -> WATER
+                                in height-5 until height -> SAND
+                                else -> STONE
                             }
                     } else {
                         tile =
                             when (y) {
                                 in height + 1..127 -> tile
-                                height -> if(sandy) TileState(BlockRegistry.SAND) else TileState(
-                                    BlockRegistry.GRASS
-                                )
-                                in height - 5 until height -> if(sandy) TileState(BlockRegistry.SAND) else TileState(
-                                    BlockRegistry.DIRT
-                                )
+                                height -> if(sandy) SAND else GRASS
+                                in height - 5 until height -> if(sandy) SAND else DIRT
                                 else -> {
-                                    TileState(BlockRegistry.STONE)
+                                    STONE
                                 }
                             }
                     }
@@ -85,7 +88,7 @@ class DefaultGenerator : IGenerator {
         for (x in 0..15) {
             for (z in 0..15) {
                 world.setTileAtAdjusted(cX, cZ, x, 0, z, TilePalette.getTileRepresentation(
-                    TileState(BlockRegistry.BORDERSTONE)
+                    BORDERSTONE
                 ))
             }
         }
