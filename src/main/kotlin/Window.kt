@@ -51,7 +51,8 @@ class Window {
     var camera = Camera()
 
     var viewproj: ViewProj = ViewProj(Matrix4f(), Matrix4f())
-    var proj: Matrix4f = Matrix4f()
+    var proj = Matrix4f()
+    var stack: MemoryStack? = null
 
     val filedf = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS")
 
@@ -162,14 +163,12 @@ class Window {
             fHeight = height
         }
 
-
-        var stack: MemoryStack? = null
         try {
             stack = MemoryStack.stackPush()
-            val pWidth = stack.mallocInt(1)
-            val pHeight = stack.mallocInt(1)
-            var pFWidth = stack.mallocInt(1)
-            var pFHeight = stack.mallocInt(1)
+            val pWidth = stack!!.mallocInt(1)
+            val pHeight = stack!!.mallocInt(1)
+            var pFWidth = stack!!.mallocInt(1)
+            var pFHeight = stack!!.mallocInt(1)
 
             glfwGetWindowSize(_window, pWidth, pHeight)
             glfwGetFramebufferSize(_window, pFWidth, pFHeight)
@@ -299,12 +298,11 @@ class Window {
 
                 prog!!.use()
 
-                var stack: MemoryStack? = null
                 try {
                     stack = MemoryStack.stackPush()
-                    glUniformMatrix4fv(uniView, false, viewproj.view.get(stack.mallocFloat(16)))
-                    glUniformMatrix4fv(uniProj, false, viewproj.proj.get(stack.mallocFloat(16)))
-                    glUniform3fv(uniFog, atmocolor.get(stack.mallocFloat(3)))
+                    glUniformMatrix4fv(uniView, false, viewproj.view.get(stack!!.mallocFloat(16)))
+                    glUniformMatrix4fv(uniProj, false, viewproj.proj.get(stack!!.mallocFloat(16)))
+                    glUniform3fv(uniFog, atmocolor.get(stack!!.mallocFloat(3)))
                 } finally {
                     stack?.pop()
                 }
