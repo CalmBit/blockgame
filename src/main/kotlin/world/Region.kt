@@ -9,15 +9,16 @@ import org.lwjgl.opengl.GL31.*
 import org.lwjgl.system.MemoryStack
 import render.ShapeHelper
 import util.FloatList
+import util.IntList
 import kotlin.random.Random
 
 
 class Region(val rX: Int, val rY: Int, val rZ: Int) {
-    private var _region: Array<Int> = Array(16*16*16) { 0 }
-    var vao: Array<Int> = Array(EnumRenderLayer.VALUES.size) {0}
-    var vbo: Array<Int> = Array(EnumRenderLayer.VALUES.size) {0}
+    private var _region: IntList = IntList(16*16*16)
+    var vao: IntList = IntList(EnumRenderLayer.VALUES.size)
+    var vbo: IntList = IntList(EnumRenderLayer.VALUES.size)
     var trans = Matrix4f()
-    var vertSize: Array<Int> = Array(EnumRenderLayer.VALUES.size) {0}
+    var vertSize: IntList = IntList(EnumRenderLayer.VALUES.size)
 
     init {
         for(l in EnumRenderLayer.VALUES) {

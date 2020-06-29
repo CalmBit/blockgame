@@ -166,7 +166,7 @@ object GuiRenderer {
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
     }
 
-    fun renderDoverlay() {
+    fun renderDoverlay(proj: Matrix4f) {
         doverlayShader!!.use()
         glDisable(GL_TEXTURE)
         glBindVertexArray(dvao)
@@ -175,8 +175,6 @@ object GuiRenderer {
         var stack: MemoryStack? = null
         try {
             stack = MemoryStack.stackPush()
-            var proj = Matrix4f()
-                .ortho(0.0f, 1.0f, 1.0f, 0.0f, -1.0f, 10.0f)
             glUniformMatrix4fv(doverlayProj, false, proj.get(stack.mallocFloat(16)))
         } finally {
             stack?.pop()

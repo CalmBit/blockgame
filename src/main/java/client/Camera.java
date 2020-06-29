@@ -15,6 +15,9 @@ public class Camera {
     private double mlastX = 400.0;
     private double mlastY = 300.0;
 
+    private Matrix4f lastView;
+    private Matrix4f lastProj;
+
     private static final double _SENSITIVITY = 0.05;
 
     public CameraMode mode = CameraMode.FIRST;
@@ -56,13 +59,13 @@ public class Camera {
     }
 
     public ViewProj generateViewProj(float renderDistance) {
-        return new ViewProj(new Matrix4f()
-                        .lookAt(
-                                _pos,
-                                new Vector3f(_pos.x + _front.x, _pos.y + _front.y, _pos.z + _front.z),
-                                new Vector3f(0.0f,1.0f,0.0f)),
-                new Matrix4f()
-                        .perspective((float)Math.toRadians(90.0),800.0f/600.0f,1.0f,renderDistance));
+        lastView = new Matrix4f()
+                .lookAt(_pos,
+                        new Vector3f(_pos.x + _front.x, _pos.y + _front.y, _pos.z + _front.z),
+                        new Vector3f(0.0f,1.0f,0.0f));
+        lastProj = new Matrix4f()
+                .perspective((float)Math.toRadians(90.0),800.0f/600.0f,1.0f,renderDistance);
+        return new ViewProj(lastView, lastProj);
     }
 
     public Vector3f getPos() {

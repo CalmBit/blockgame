@@ -26,6 +26,7 @@ public class FontRenderer {
 
     public static final Vector3f SHADOW = new Vector3f(0.45f, 0.45f, 0.45f);
     public static final Vector3f WHITE = new Vector3f(1.0f, 1.0f, 1.0f);
+    public char[] char_buffer;
 
     public FontRenderer() throws IOException {
         vao = GL31.glGenVertexArrays();
@@ -79,9 +80,9 @@ public class FontRenderer {
         float cX = x;
         float cY = y;
         float height = fontHeight * scale;
-        char[] chars = text.toCharArray();
+        char_buffer = text.toCharArray();
 
-        for (char c : chars) {
+        for (char c : char_buffer) {
             if (c == '\n') {
                 cY += height + scale;
                 cX = x;
@@ -163,8 +164,8 @@ public class FontRenderer {
 
     public float getStringWidth(String s, float scale) {
         float width = 0.0f;
-        char[] chars = s.toCharArray();
-        for(char c : chars) {
+        char_buffer = s.toCharArray();
+        for(char c : char_buffer) {
             width += (getFontWidth(c) * scale);
             width += scale;
         }
@@ -179,7 +180,6 @@ public class FontRenderer {
         GL31.glBindVertexArray(vao);
         GL31.glBindBuffer( GL31.GL_ARRAY_BUFFER, vbo);
         GL31.glBufferData( GL31.GL_ARRAY_BUFFER, verts.getStore(),  GL31.GL_DYNAMIC_DRAW);
-
 
         MemoryStack stack = null;
         try {

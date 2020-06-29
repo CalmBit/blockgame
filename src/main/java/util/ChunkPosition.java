@@ -4,6 +4,7 @@ import java.util.HashMap;
 
 public class ChunkPosition {
     private static final HashMap<String, ChunkPosition> CHUNK_POS_MAP = new HashMap<>();
+    private static final HashMap<Thread, String> STRING_BUFFER = new HashMap<>();
 
     public int x;
     public int z;
@@ -20,8 +21,8 @@ public class ChunkPosition {
     }
 
     public static ChunkPosition getChunkPosition(int x, int z) {
-        String search = x+","+z;
-
+        STRING_BUFFER.put(Thread.currentThread(), x+","+z);
+        String search = STRING_BUFFER.get(Thread.currentThread());
         if(CHUNK_POS_MAP.containsKey(search)) {
             return CHUNK_POS_MAP.get(search);
         } else {

@@ -30,6 +30,8 @@ object PlaneRenderer {
     var VOID_PLANE: Vector3f = Vector3f(0.118f, 0.565f, 1.000f)
     val DARK_PLANE: Vector3f = Vector3f()
 
+    var planeTransMat = Matrix4f()
+
     init {
         vao = glGenVertexArrays()
         glBindVertexArray(vao)
@@ -101,10 +103,9 @@ object PlaneRenderer {
             stack = MemoryStack.stackPush()
             glBindVertexArray(vao)
             glBindBuffer(GL_ARRAY_BUFFER, vbo)
-            glUniformMatrix4fv(
-                planeTrans, false, Matrix4f()
+            planeTransMat = Matrix4f()
                 .translate(pos)
-                .get(stack.mallocFloat(16)))
+            glUniformMatrix4fv(planeTrans, false, planeTransMat.get(stack.mallocFloat(16)))
             glUniformMatrix4fv(planeView, false, view.get(stack.mallocFloat(16)))
             glUniformMatrix4fv(planeProj, false, proj.get(stack.mallocFloat(16)))
             glUniform3fv(planeColor, SKY_PLANE.get(stack.mallocFloat(3)))

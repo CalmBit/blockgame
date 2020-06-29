@@ -99,8 +99,11 @@ class Window {
             if(!firstGenDone)
                 return@glfwSetKeyCallback
             if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE)
-                if(!focused)
-                    glfwSetWindowShouldClose(window, true)
+                if(!focused) {
+                    focused = true
+                    GuiRenderer.clearScreen()
+                    glfwSetInputMode(_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED)
+                }
                 else {
                     focused = false
                     GuiRenderer.attachScreen(GuiPauseScreen())
@@ -137,10 +140,8 @@ class Window {
         }
 
         glfwSetMouseButtonCallback(_window) {window: Long, button: Int, action: Int, mods: Int ->
-            if(!focused && button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
-                focused = true
-                GuiRenderer.clearScreen()
-                glfwSetInputMode(_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED)
+            if(!focused) {
+                GuiRenderer.screen!!.mouseClick(button, action)
             }
         }
 
@@ -319,8 +320,14 @@ class Window {
                 FONT_RENDERER.draw(proj)
 
                 if (!focused) {
-                    GuiRenderer.renderDoverlay()
+                    proj = Matrix4f()
+                        .ortho(0.0f, 1.0f, 1.0f, 0.0f, -1.0f, 10.0f)
+
+                    GuiRenderer.renderDoverlay(proj)
                     //
+                    proj = Matrix4f()
+                        .ortho(0.0f, wWidth, wHeight, 0.0f, -1.0f, 10.0f)
+
                     GuiRenderer.renderScreen(proj)
                 }
 
