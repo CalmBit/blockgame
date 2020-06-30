@@ -1,4 +1,4 @@
-package world.generators.decorators
+package world.generators.decorator
 
 import block.BlockRegistry
 import block.TilePalette
@@ -9,8 +9,8 @@ import java.lang.Exception
 class TreeDecorator(val log: TileState, val leaves: TileState, val chances: Int, val stayPredicate: (TileState) -> Boolean) : IDecorator {
     override fun decorate(world: World, cX: Int, cZ: Int) {
         for (c in 0 until chances) {
-            var x = world.random.nextInt(8, 16)
-            var z = world.random.nextInt(8, 16)
+            var x = world.random.nextInt(8) + 8
+            var z = world.random.nextInt(8) + 8
             var y = 0
             try {
                 y = world.getTopTilePosAdjusted(cX, cZ, x, z)
@@ -20,7 +20,7 @@ class TreeDecorator(val log: TileState, val leaves: TileState, val chances: Int,
 
             // TODO: Change cX/cZ if the tree goes out of bounds
             if (stayPredicate(world.getTileAtAdjusted(cX, cZ, x, y, z)!!)) continue
-            var height = world.random.nextInt(6, 9)
+            var height = world.random.nextInt(6) + 2
             for (i in 1..height) {
                 world.setTileAtAdjusted(cX, cZ, x, y + i, z, TilePalette.getTileRepresentation(log))
                 when (i) {

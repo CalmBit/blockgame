@@ -1,4 +1,4 @@
-package world.generators.decorators
+package world.generators.decorator
 
 import block.BlockRegistry
 import block.TilePalette
@@ -9,9 +9,9 @@ class OreDecorator(val ore: TileState, val chances: Int, val minY: Int, val maxY
                    val scaleFail: Boolean = true) : IDecorator {
     override fun decorate(world: World, cX: Int, cZ: Int) {
         for (c in 0 until chances) {
-            var x = world.random.nextInt(8, 16)
-            var y = world.random.nextInt(0, 128)
-            var z = world.random.nextInt(8, 16)
+            var x = world.random.nextInt(8) + 8
+            var y = world.random.nextInt(128)
+            var z = world.random.nextInt(8) + 8
 
             if(y < minY || y > maxY) continue
 
@@ -30,9 +30,9 @@ class OreDecorator(val ore: TileState, val chances: Int, val minY: Int, val maxY
                     break
                 }
 
-                var dX = world.random.nextInt(-1, 2)
-                var dY = world.random.nextInt(-1, 2)
-                var dZ = world.random.nextInt(-1, 2)
+                var dX = world.random.nextInt(2) - 1
+                var dY = world.random.nextInt(2) - 1
+                var dZ = world.random.nextInt(2) - 1
 
                 if (y + dY < 0 || y + dY > 128  || y + dY < minY || y + dY > maxY) {
                     dY = 0

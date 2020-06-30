@@ -26,7 +26,20 @@ public class FontRenderer {
 
     public static final Vector3f SHADOW = new Vector3f(0.45f, 0.45f, 0.45f);
     public static final Vector3f WHITE = new Vector3f(1.0f, 1.0f, 1.0f);
+    public static final Vector3f YELLOW = new Vector3f(1.0f, 1.0f, 0.0f);
+    public static final Vector3f INACTIVE = new Vector3f(0.75f, 0.75f, 0.75f);
     public char[] char_buffer;
+
+    public static FontRenderer FONT_RENDERER = null;
+
+    static {
+        try {
+            FONT_RENDERER = new FontRenderer();
+        } catch (IOException e) {
+            System.err.println(e.getMessage());
+            System.exit(-1);
+        }
+    }
 
     public FontRenderer() throws IOException {
         vao = GL31.glGenVertexArrays();

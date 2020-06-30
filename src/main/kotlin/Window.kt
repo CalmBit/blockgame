@@ -14,6 +14,9 @@ import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryUtil.NULL
 import render.*
 import util.ChunkPosition
+import worker.BindChunkQueue
+import worker.GeneratorPool
+import worker.RenderPool
 import world.World
 import java.io.File
 import java.text.SimpleDateFormat
@@ -60,10 +63,6 @@ class Window {
 
     var firstGenDone = false
     var loadScreen = GuiLoadingScreen()
-
-    companion object {
-        lateinit var FONT_RENDERER: FontRenderer
-    }
 
     fun run() {
         Logger.logger.debug("[RUN]")
@@ -141,7 +140,7 @@ class Window {
 
         glfwSetMouseButtonCallback(_window) {window: Long, button: Int, action: Int, mods: Int ->
             if(!focused) {
-                GuiRenderer.screen!!.mouseClick(button, action)
+                GuiRenderer.mouseClick(button, action)
             }
         }
 
@@ -198,8 +197,8 @@ class Window {
         glEnable(GL_CULL_FACE)
         glEnable(GL_BLEND)
 
-        FONT_RENDERER = FontRenderer();
         GuiRenderer.init()
+        PlaneRenderer.init()
 
         tex = Texture(File("texture", "terrain.png"))
         tex2 = Texture(File("texture", "terrain2.png"))
@@ -218,7 +217,7 @@ class Window {
         uniProj = glGetUniformLocation(prog!!.getProgram(), "proj")
         uniFog = glGetUniformLocation(prog!!.getProgram(), "fogColor")
 
-        world = World(_window, prog!!)
+        world = World();
 
         GuiRenderer.updateWindowSize(wWidth, wHeight)
 
@@ -260,34 +259,34 @@ class Window {
                     ticks++
                 }
 
-                FONT_RENDERER.renderWithShadow(4.0f, 2.0f, "BlockGame pre-062320 (FPS: $fps / TPS: $tps)", 1.0f)
-                FONT_RENDERER.renderWithShadow(
+                FontRenderer.FONT_RENDERER.renderWithShadow(4.0f, 2.0f, "BlockGame pre-062320 (FPS: $fps / TPS: $tps)", 1.0f)
+                FontRenderer.FONT_RENDERER.renderWithShadow(
                     4.0f,
-                    FONT_RENDERER.font.height * 1.0f + 2.0f,
+                    FontRenderer.FONT_RENDERER.font.height * 1.0f + 2.0f,
                     "Position: (X: ${camera.pos.x} / Y: ${camera.pos.y} / Z: ${camera.pos.z}) (Chunk: ${camera.pos.x.toInt() shr 4}, ${camera.pos.z.toInt() shr 4})",
                     1.0f
                 )
-                FONT_RENDERER.renderWithShadow(
+                FontRenderer.FONT_RENDERER.renderWithShadow(
                     4.0f,
-                    FONT_RENDERER.font.height * 2.0f + 2.0f,
-                    "G: ${world!!.generateChunkQueue.size} / D: ${world!!.decorateChunkQueue.size} / R: ${world!!.renderChunkQueue.size} / B: ${world!!.bindChunkQueue.size}",
+                    FontRenderer.FONT_RENDERER.font.height * 2.0f + 2.0f,
+                    "G: ${GeneratorPool.queueSize()} / D: N/A / R: ${RenderPool.queueSize()} / B: ${BindChunkQueue.queueSize()}",
                     1.0f
                 )
-                FONT_RENDERER.renderWithShadow(
+                FontRenderer.FONT_RENDERER.renderWithShadow(
                     4.0f,
-                    FONT_RENDERER.font.height * 3.0f + 2.0f,
+                    FontRenderer.FONT_RENDERER.font.height * 3.0f + 2.0f,
                     "Memory: ${(runtime.totalMemory() - runtime.freeMemory()) / (1024 * 1024)}MB/${runtime.totalMemory() / (1024 * 1024)}MB",
                     1.0f
                 )
-                FONT_RENDERER.renderWithShadow(
+                FontRenderer.FONT_RENDERER.renderWithShadow(
                     4.0f,
-                    FONT_RENDERER.font.height * 4.0f + 2.0f,
+                    FontRenderer.FONT_RENDERER.font.height * 4.0f + 2.0f,
                     "Seed: ${world!!.getSeed()}",
                     1.0f
                 )
-                FONT_RENDERER.renderWithShadow(
+                FontRenderer.FONT_RENDERER.renderWithShadow(
                     4.0f,
-                    FONT_RENDERER.font.height * 5.0f + 2.0f,
+                    FontRenderer.FONT_RENDERER.font.height * 5.0f + 2.0f,
                     "Chunks Loaded: ${world!!.chunkCount()}",
                     1.0f
                 )
@@ -317,7 +316,7 @@ class Window {
 
                 GuiRenderer.renderCrosshair(proj)
 
-                FONT_RENDERER.draw(proj)
+                FontRenderer.FONT_RENDERER.draw(proj)
 
                 if (!focused) {
                     proj = Matrix4f()
@@ -333,26 +332,12 @@ class Window {
 
                 glEnable(GL_DEPTH_TEST)
 
-                fun bindChunk(batch: world.BindChunkBatch) {
-                    batch.first.bindRenderData(batch.second, batch.third, prog!!)
-                }
-
-                if (world!!.bindChunkQueue.size > 0) {
-                    if (world!!.bindChunkQueue.size < 48) {
-                        while (world!!.bindChunkQueue.size > 0) {
-                            bindChunk(world!!.bindChunkQueue.remove())
-                        }
-                    } else {
-                        for (i in 0 until 48) {
-                            bindChunk(world!!.bindChunkQueue.remove())
-                        }
-                    }
-                }
+                BindChunkQueue.bindChunks(prog)
 
                 val px = (camera.pos.x.toInt() shr 4)
                 val pz = (camera.pos.z.toInt() shr 4)
 
-                for (x in px - 4..px + 4) {
+                /*for (x in px - 4..px + 4) {
                     for (z in pz - 4..pz + 4) {
                         if (!world!!.chunkExists(ChunkPosition.getChunkPosition(x, z))) {
                             world!!.lazyChunkQueue.offer(ChunkPosition.getChunkPosition(x, z))
@@ -366,7 +351,7 @@ class Window {
                         val chunk = world!!.addChunk(cPos)
                         world!!.generateChunkQueue.offer(chunk)
                     }
-                }
+                }*/
 
                 frames++
                 if (Duration.between(lastFs, Instant.now()).seconds >= 1) {
@@ -383,13 +368,13 @@ class Window {
 
                 proj = Matrix4f().ortho(0.0f, wWidth, wHeight, 0.0f, -1.0f, 10.0f)
 
-                FONT_RENDERER.draw(proj)
+                FontRenderer.FONT_RENDERER.draw(proj)
 
-                loadScreen.chunksLeft = world!!.generateChunkQueue.size
+                loadScreen.chunksLeft = GeneratorPool.queueSize();
 
                 GuiRenderer.renderScreen(proj)
 
-                if(world!!.generateChunkQueue.size == 0) {
+                if(GeneratorPool.queueSize() == 0) {
                     glfwSetInputMode(_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED)
                     GuiRenderer.clearScreen()
                     firstGenDone = true

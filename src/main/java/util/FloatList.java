@@ -48,6 +48,15 @@ public class FloatList {
         _store[_length++] = value;
     }
 
+    public void appendAll(float ...values) {
+        while(_length + values.length > _capacity) {
+            resize(_capacity * 2);
+        }
+        for(float v : values) {
+            _store[_length++] = v;
+        }
+    }
+
     public void clear() {
         for(int i =0;i < _length;i++) {
             _store[i] = 0.0f;

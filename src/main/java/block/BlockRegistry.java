@@ -1,6 +1,7 @@
 package block;
 
 import gl.UVPair;
+import registry.DuplicateKeyException;
 import registry.Registry;
 import registry.RegistryName;
 
@@ -38,7 +39,12 @@ public class BlockRegistry {
 
 
     private static Block register(Block block) {
-        return _REGISTRY.register(block);
+        try {
+            return _REGISTRY.register(block);
+        } catch(DuplicateKeyException e) {
+            System.err.println(e.getMessage());
+            System.exit(-1);
+            return null;
+        }
     }
-
 }

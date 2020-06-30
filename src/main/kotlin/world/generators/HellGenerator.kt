@@ -6,9 +6,9 @@ import block.TileState
 import org.spongepowered.noise.Noise
 import org.spongepowered.noise.NoiseQuality
 import world.World
-import world.generators.decorators.IDecorator
-import world.generators.decorators.OreDecorator
-import world.generators.decorators.TreeDecorator
+import world.generators.decorator.IDecorator
+import world.generators.decorator.OreDecorator
+import world.generators.decorator.TreeDecorator
 
 
 class HellGenerator : IGenerator {
