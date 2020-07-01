@@ -22,4 +22,4 @@ private.properties
 Thumbs.db
 .DS_Store
 
-*.png
+screenshots/**
