@@ -3,6 +3,7 @@ package blockgame.worker;
 import blockgame.block.EnumRenderLayer;
 import blockgame.gl.ShaderProgram;
 import blockgame.util.FloatList;
+import blockgame.util.FloatListCache;
 import blockgame.world.Chunk;
 
 import java.util.ArrayDeque;
@@ -14,10 +15,10 @@ import java.util.concurrent.locks.ReentrantLock;
 public class BindChunkQueue {
     public static class BindChunkQueueTask {
         public Chunk chunk;
-        public List<FloatList> verts;
+        public List<FloatListCache.Entry> verts;
         public EnumRenderLayer layer;
 
-        public BindChunkQueueTask(Chunk chunk, List<FloatList> verts, EnumRenderLayer layer) {
+        public BindChunkQueueTask(Chunk chunk, List<FloatListCache.Entry> verts, EnumRenderLayer layer) {
             this.chunk = chunk;
             this.verts = verts;
             this.layer = layer;
@@ -32,7 +33,7 @@ public class BindChunkQueue {
 
     public static final Lock BIND_LOCK = new ReentrantLock();
 
-    public static void enqueueBind(Chunk chunk, List<FloatList> verts, EnumRenderLayer layer) {
+    public static void enqueueBind(Chunk chunk, List<FloatListCache.Entry> verts, EnumRenderLayer layer) {
         BIND_LOCK.lock();
         INSTANCE.queue.add(new BindChunkQueueTask(chunk, verts, layer));
         BIND_LOCK.unlock();
@@ -40,6 +41,7 @@ public class BindChunkQueue {
 
     private static void bind(ShaderProgram program, BindChunkQueueTask currentTask) {
         currentTask.chunk.bindRenderData(currentTask.verts, currentTask.layer, program);
+        currentTask.verts.forEach((entry -> entry.free()));
     }
 
     public static void bindChunks(ShaderProgram program) {

@@ -3,6 +3,7 @@ package blockgame.world;
 import blockgame.block.EnumRenderLayer;
 import blockgame.block.TileState;
 import blockgame.gl.ShaderProgram;
+import blockgame.util.FloatListCache;
 import org.lwjgl.system.MemoryStack;
 import blockgame.util.FloatList;
 import blockgame.worker.RenderPool;
@@ -61,11 +62,10 @@ public class Chunk {
         dirty = true;
     }
 
-    public List<FloatList> buildRenderData(World world, EnumRenderLayer l) {
-        List<FloatList> verts = new ArrayList<>();
+    public List<FloatListCache.Entry> buildRenderData(World world, EnumRenderLayer l) {
+        List<FloatListCache.Entry> verts = new ArrayList<>();
         for (Region region : _regions) {
-            FloatList v = region.buildRenderData(world, cX, cZ, l);
-            verts.add(v);
+            verts.add(region.buildRenderData(world, cX, cZ, l));
         }
         return verts;
     }
@@ -90,7 +90,7 @@ public class Chunk {
         }
     }
 
-    public void bindRenderData(List<FloatList> verts, EnumRenderLayer l, ShaderProgram prog) {
+    public void bindRenderData(List<FloatListCache.Entry> verts, EnumRenderLayer l, ShaderProgram prog) {
         for(int i = 0;i < _regions.length;i++) {
             _regions[i].bindData(verts.get(i), l, prog);
         }

@@ -4,6 +4,7 @@ import blockgame.block.EnumRenderLayer;
 import blockgame.block.TilePalette;
 import blockgame.block.TileState;
 import blockgame.gl.ShaderProgram;
+import blockgame.util.FloatListCache;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL33;
 import org.lwjgl.system.MemoryStack;
@@ -40,23 +41,23 @@ public class Region {
         _rZ = rZ;
     }
 
-    public FloatList buildRenderData(World world, int cX, int cZ, EnumRenderLayer l) {
-        FloatList verts = new FloatList();
+    public FloatListCache.Entry buildRenderData(World world, int cX, int cZ, EnumRenderLayer l) {
+        FloatListCache.Entry e = FloatListCache.reserve();
         for (int y = 0;y < 16;y++) {
             for (int z = 0;z < 16;z++) {
                 for (int x = 0;x < 16;x++) {
                     TileState t = getTileAt(x, y, z);
                     if (!t.shouldRender() || t.renderLayer() != l)
                         continue;
-                    ShapeHelper.appendVerts(world, cX, cZ, _rY, x, y, z, t, verts);
+                    ShapeHelper.appendVerts(world, cX, cZ, _rY, x, y, z, t, e.getList());
                 }
             }
         }
-        return verts;
+        return e;
     }
 
-    public void bindData(FloatList verts, EnumRenderLayer l, ShaderProgram prog) {
-        vertSize.set(l.ordinal(), verts.getLength());
+    public void bindData(FloatListCache.Entry verts, EnumRenderLayer l, ShaderProgram prog) {
+        vertSize.set(l.ordinal(), verts.getList().getLength());
         GL33.glBindVertexArray(vao.get(l.ordinal()));
         GL33.glBindBuffer(GL33.GL_ARRAY_BUFFER, vbo.get(l.ordinal()));
         GL33.glBufferData(GL33.GL_ARRAY_BUFFER, verts.getStore(), GL33.GL_STATIC_DRAW);
