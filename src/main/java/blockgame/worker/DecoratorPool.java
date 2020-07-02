@@ -1,6 +1,5 @@
 package blockgame.worker;
 
-import blockgame.util.ChunkPosition;
 import blockgame.world.Chunk;
 import blockgame.world.World;
 
@@ -33,8 +32,8 @@ public class DecoratorPool {
     }
 
     public static boolean checkChunkGen(World world, int x, int z) {
-        return world.getChunk(ChunkPosition.getChunkPosition(x, z)) != null
-                && world.getChunk(ChunkPosition.getChunkPosition(x, z)).hasGenerated;
+        return world.getChunk(world.calculateChunkPosition(x, z)) != null
+                && world.getChunk(world.calculateChunkPosition(x, z)).hasGenerated;
     }
 
     public static int queueSize() {

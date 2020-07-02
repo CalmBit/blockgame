@@ -1,6 +1,5 @@
 package blockgame.worker;
 
-import blockgame.util.ChunkPosition;
 import blockgame.world.Chunk;
 import blockgame.world.World;
 
@@ -24,14 +23,14 @@ public class GeneratorPool {
             if(chunk.hasGenerated)
                 return;
             chunk.generate(world);
-                if(world.getChunk(ChunkPosition.getChunkPosition(chunk.cX-1, chunk.cZ)) != null && !world.getChunk(ChunkPosition.getChunkPosition(chunk.cX-1, chunk.cZ)).hasDecorated) {
-                    DecoratorPool.enqueueChunkDecoration(world, world.getChunk(ChunkPosition.getChunkPosition(chunk.cX-1, chunk.cZ)));
+                if(world.getChunk(world.calculateChunkPosition(chunk.cX-1, chunk.cZ)) != null && !world.getChunk(world.calculateChunkPosition(chunk.cX-1, chunk.cZ)).hasDecorated) {
+                    DecoratorPool.enqueueChunkDecoration(world, world.getChunk(world.calculateChunkPosition(chunk.cX-1, chunk.cZ)));
                 }
-                if(world.getChunk(ChunkPosition.getChunkPosition(chunk.cX, chunk.cZ-1)) != null && !world.getChunk(ChunkPosition.getChunkPosition(chunk.cX, chunk.cZ-1)).hasDecorated) {
-                    DecoratorPool.enqueueChunkDecoration(world, world.getChunk(ChunkPosition.getChunkPosition(chunk.cX, chunk.cZ - 1)));
+                if(world.getChunk(world.calculateChunkPosition(chunk.cX, chunk.cZ-1)) != null && !world.getChunk(world.calculateChunkPosition(chunk.cX, chunk.cZ-1)).hasDecorated) {
+                    DecoratorPool.enqueueChunkDecoration(world, world.getChunk(world.calculateChunkPosition(chunk.cX, chunk.cZ - 1)));
                 }
-                if(world.getChunk(ChunkPosition.getChunkPosition(chunk.cX-1, chunk.cZ-1)) != null && !world.getChunk(ChunkPosition.getChunkPosition(chunk.cX-1, chunk.cZ-1)).hasDecorated) {
-                    DecoratorPool.enqueueChunkDecoration(world, world.getChunk(ChunkPosition.getChunkPosition(chunk.cX - 1, chunk.cZ - 1)));
+                if(world.getChunk(world.calculateChunkPosition(chunk.cX-1, chunk.cZ-1)) != null && !world.getChunk(world.calculateChunkPosition(chunk.cX-1, chunk.cZ-1)).hasDecorated) {
+                    DecoratorPool.enqueueChunkDecoration(world, world.getChunk(world.calculateChunkPosition(chunk.cX - 1, chunk.cZ - 1)));
                 }
             RenderPool.enqueueChunkRender(world, chunk, true);
         });
