@@ -3,15 +3,14 @@ package blockgame.world;
 import blockgame.block.BlockRegistry;
 import blockgame.block.EnumRenderLayer;
 import blockgame.block.TileState;
+import blockgame.util.LongMap;
 import org.lwjgl.system.MemoryStack;
 import blockgame.worker.GeneratorPool;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Random;
 
 public class World {
-    private Map<Long, Chunk> _chunks = new HashMap<>();
+    private LongMap<Chunk> _chunks = new LongMap<>();
     private int _seed = 0xDEADBEEF;
     public Random random = new Random(_seed);
     public Random tickRandom = new Random();
@@ -46,13 +45,13 @@ public class World {
     public void draw(int uniTrans, float timer) {
         final MemoryStack[] stack = {null};
 
-        _chunks.forEach((chunkPosition, chunk) -> {
+        _chunks.forEachValue((chunk) -> {
             stack[0] = MemoryStack.stackPush();
             chunk.draw(stack[0], EnumRenderLayer.NORMAL, uniTrans, timer);
             stack[0].pop();
         });
 
-        _chunks.forEach((chunkPosition, chunk) -> {
+        _chunks.forEachValue((chunk) -> {
             stack[0] = MemoryStack.stackPush();
             chunk.draw(stack[0], EnumRenderLayer.TRANSLUCENT, uniTrans, timer);
             stack[0].pop();
@@ -134,7 +133,7 @@ public class World {
     }
 
     public void tick() {
-        _chunks.forEach((chunkPosition, chunk) -> chunk.tick(this, tickRandom));
+        _chunks.forEachValue((chunk) -> chunk.tick(this, tickRandom));
     }
 
     public int chunkCount() {
