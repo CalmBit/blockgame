@@ -43,9 +43,9 @@ public class DensityGenerator implements IGenerator {
     static {
         gen = new Perlin();
         gen.setOctaveCount(6);
-        gen.setFrequency(0.35);
-        gen.setPersistence(0.35);
-        gen.setLacunarity(0.5);
+        gen.setFrequency(0.45);
+        gen.setPersistence(0.375);
+        gen.setLacunarity(0.2);
         exp = new Exponent();
         exp.setSourceModule(0, gen);
         exp.setExponent(8);
