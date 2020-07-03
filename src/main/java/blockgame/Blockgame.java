@@ -6,10 +6,12 @@ public class Blockgame {
             Window w = new Window();
             w.run();
         } catch (Exception e) {
-            Logger.LOG.fatal(e.getMessage());
+            Logger.LOG.fatal("Caught exception - " + e.getClass().getName());
+            StringBuilder build = new StringBuilder();
             for(StackTraceElement el : e.getStackTrace()) {
-                Logger.LOG.fatal(el.toString());
+                build.append(el.toString()).append("\n");
             }
+            Logger.LOG.fatal(build.toString());
         }
     }
 }

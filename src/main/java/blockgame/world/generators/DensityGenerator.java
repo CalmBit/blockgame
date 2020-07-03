@@ -3,6 +3,7 @@ package blockgame.world.generators;
 import blockgame.block.BlockRegistry;
 import blockgame.block.TilePalette;
 import blockgame.block.TileState;
+import blockgame.util.ValuePerlin;
 import blockgame.world.World;
 import blockgame.world.generators.decorator.DungeonDecorator;
 import blockgame.world.generators.decorator.IDecorator;
@@ -68,10 +69,10 @@ public class DensityGenerator implements IGenerator {
         _decorators.add(new TreeDecorator(
                 new TileState(BlockRegistry.BIRCH_LOG),
                 new TileState(BlockRegistry.BIRCH_LEAVES), 1, STAY_ON_GRASS));
-        _decorators.add(new OreDecorator(new TileState(BlockRegistry.COAL_ORE), 24, 12, 78, 20, REPLACE_ONLY_STONE ));
-        _decorators.add(new OreDecorator(new TileState(BlockRegistry.IRON_ORE), 16, 4, 64, 12, REPLACE_ONLY_STONE));
-        _decorators.add(new OreDecorator(new TileState(BlockRegistry.GOLD_ORE), 8, 4, 32, 8, REPLACE_ONLY_STONE));
-        _decorators.add(new OreDecorator(new TileState(BlockRegistry.DIAMOND_ORE), 12, 4, 16, 8, REPLACE_ONLY_STONE));
+        _decorators.add(new OreDecorator(new TileState(BlockRegistry.COAL_ORE), 20, 12, 78, 20, REPLACE_ONLY_STONE ));
+        _decorators.add(new OreDecorator(new TileState(BlockRegistry.IRON_ORE), 12, 4, 64, 12, REPLACE_ONLY_STONE));
+        _decorators.add(new OreDecorator(new TileState(BlockRegistry.GOLD_ORE), 4, 4, 32, 12, REPLACE_ONLY_STONE));
+        _decorators.add(new OreDecorator(new TileState(BlockRegistry.DIAMOND_ORE), 2, 4, 16, 8, REPLACE_ONLY_STONE));
         _decorators.add(new DungeonDecorator(2, 16, 32));
     }
 

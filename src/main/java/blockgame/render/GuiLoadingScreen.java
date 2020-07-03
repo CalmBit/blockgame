@@ -14,8 +14,8 @@ public class GuiLoadingScreen extends GuiScreen {
     public GuiNoiseVisualizer f;
 
     public GuiLoadingScreen(Module p, Module g) {
-        v = new GuiNoiseVisualizer(new Vector2f(0.0f, 0.0f), p);
-        f = new GuiNoiseVisualizer(new Vector2f(128.0f, 0.0f), g);
+        v = new GuiNoiseVisualizer(new Vector2f(128.0f - 16.0f, 256.0f), p);
+        f = new GuiNoiseVisualizer(new Vector2f(256.0f + 16.0f, 256.0f), g);
 
     }
 
@@ -25,5 +25,8 @@ public class GuiLoadingScreen extends GuiScreen {
         FontRenderer.FONT_RENDERER.renderWithShadowImmediate(proj, 128.0f, 128.0f + (FontRenderer.FONT_RENDERER.fontHeight * 2) + 4.0f, "Rendering "+ RenderPool.queueSize() + " chunks...", 1.0f);
         v.render(proj);
         f.render(proj);
+        FontRenderer.FONT_RENDERER.renderWithShadowImmediate(proj, 128.0f - 16.0f, 256.0f - FontRenderer.FONT_RENDERER.fontHeight - 6.0f, "Heightmap", 1.0f);
+        FontRenderer.FONT_RENDERER.renderWithShadowImmediate(proj, 256.0f + 16.0f, 256.0f - FontRenderer.FONT_RENDERER.fontHeight - 6.0f, "Density map", 1.0f);
+
     }
 }

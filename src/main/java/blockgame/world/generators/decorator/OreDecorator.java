@@ -34,11 +34,8 @@ public class OreDecorator implements IDecorator {
     public void decorate(World world, int cX, int cZ) {
         for (int c = 0;c < _chances;c++) {
             int x = world.random.nextInt(8) + 8;
-            int y = world.random.nextInt(128);
+            int y = world.random.nextInt(_maxY - _minY) + _minY;
             int z = world.random.nextInt(8) + 8;
-
-            if(y < _minY || y > _maxY)
-                continue;
 
             if(world.getTileAtAdjusted(cX, cZ, x, y, z) == null) {
                 world.getTileAtAdjusted(cX, cZ, x, y, z);
@@ -64,14 +61,11 @@ public class OreDecorator implements IDecorator {
                     dY = 0;
                 }
 
-                if (!_replacePredicate.test(world.getTileAtAdjusted(cX, cZ, x + dX, y +dY, z + dZ))) {
-                    dX = 0;
-                    dY = 0;
-                    dZ = 0;
+                if (_replacePredicate.test(world.getTileAtAdjusted(cX, cZ, x + dX, y +dY, z + dZ))) {
+                    world.setTileAtAdjusted(cX, cZ, x + dX, y + dY, z + dZ, TilePalette.getTileRepresentation(_ore));
                 }
 
 
-                world.setTileAtAdjusted(cX, cZ, x + dX, y + dY, z + dZ, TilePalette.getTileRepresentation(_ore));
                 x += dX;
                 y += dY;
                 z += dZ;

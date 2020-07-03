@@ -12,6 +12,8 @@ import org.lwjgl.system.MemoryStack;
 import org.spongepowered.noise.module.Module;
 import org.spongepowered.noise.module.source.Perlin;
 
+import java.io.File;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 
 public class GuiNoiseVisualizer extends GuiBase {
@@ -21,9 +23,19 @@ public class GuiNoiseVisualizer extends GuiBase {
     private Vector2f _size;
     private Rectangled _bounds;
     private FloatList _verts = new FloatList();
+    private FloatList _frame = new FloatList();
     private MemoryStack _stack = null;
 
+    public static Texture frame;
+
     public GuiNoiseVisualizer(Vector2f pos, Module perlin) {
+        if(frame == null) {
+            try {
+                frame = new Texture(new File("texture", "noise_frame.png"));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
         _tex = GL33.glGenTextures();
         GL33.glBindTexture(GL33.GL_TEXTURE_2D, _tex);
         GL33.glTexParameteri(GL33.GL_TEXTURE_2D, GL33.GL_TEXTURE_WRAP_S, GL33.GL_REPEAT);
@@ -34,6 +46,8 @@ public class GuiNoiseVisualizer extends GuiBase {
         _pos = pos;
         _size = new Vector2f(512.0f, 512.0f);
         _bounds = new Rectangled(pos.x, pos.y, pos.x + (_size.x / 4.0f), pos.y + (_size.y / 4.0f));
+
+        precacheVerts();
 
         ByteBuffer img = BufferUtils.createByteBuffer((int)(_size.x * _size.y * 4));
 
@@ -76,59 +90,113 @@ public class GuiNoiseVisualizer extends GuiBase {
             _stack.pop();
         }
 
+        frame.use();
+
+        GL33.glBufferData(GL33.GL_ARRAY_BUFFER, _frame.getStore(), GL33.GL_DYNAMIC_DRAW);
+        GL33.glDrawArrays(GL33.GL_TRIANGLES, 0, 6);
+
+
         GL33.glBindTexture(GL33.GL_TEXTURE_2D, _tex);
 
-        _verts.append((float) _bounds.minX);
-        _verts.append((float) _bounds.minY);
-        _verts.append(1.0f);
-        _verts.append(1.0f);
-        _verts.append(1.0f);
-        _verts.append(0.0f);
-        _verts.append(0.0f);
-
-        _verts.append((float) _bounds.minX);
-        _verts.append((float) _bounds.maxY);
-        _verts.append(1.0f);
-        _verts.append(1.0f);
-        _verts.append(1.0f);
-        _verts.append(0.0f);
-        _verts.append(1.0f);
-
-        _verts.append((float) _bounds.maxX);
-        _verts.append((float) _bounds.maxY);
-        _verts.append(1.0f);
-        _verts.append(1.0f);
-        _verts.append(1.0f);
-        _verts.append(1.0f);
-        _verts.append(1.0f);
-
-        _verts.append((float) _bounds.maxX);
-        _verts.append((float) _bounds.maxY);
-        _verts.append(1.0f);
-        _verts.append(1.0f);
-        _verts.append(1.0f);
-        _verts.append(1.0f);
-        _verts.append(1.0f);
-
-        _verts.append((float) _bounds.maxX);
-        _verts.append((float) _bounds.minY);
-        _verts.append(1.0f);
-        _verts.append(1.0f);
-        _verts.append(1.0f);
-        _verts.append(1.0f);
-        _verts.append(0.0f);
-
-        _verts.append((float) _bounds.minX);
-        _verts.append((float) _bounds.minY);
-        _verts.append(1.0f);
-        _verts.append(1.0f);
-        _verts.append(1.0f);
-        _verts.append(0.0f);
-        _verts.append(0.0f);
-
         GL33.glBufferData(GL33.GL_ARRAY_BUFFER, _verts.getStore(), GL33.GL_DYNAMIC_DRAW);
-
         GL33.glDrawArrays(GL33.GL_TRIANGLES, 0, 6);
-        _verts.clear();
+    }
+
+    public void precacheVerts() {
+        _frame.append((float) _bounds.minX - 4);
+        _frame.append((float) _bounds.minY - 4);
+        _frame.append(1.0f);
+        _frame.append(1.0f);
+        _frame.append(1.0f);
+        _frame.append(0.0f);
+        _frame.append(0.0f);
+
+        _frame.append((float) _bounds.minX - 4);
+        _frame.append((float) _bounds.maxY + 4);
+        _frame.append(1.0f);
+        _frame.append(1.0f);
+        _frame.append(1.0f);
+        _frame.append(0.0f);
+        _frame.append(1.0f);
+
+        _frame.append((float) _bounds.maxX + 4);
+        _frame.append((float) _bounds.maxY + 4);
+        _frame.append(1.0f);
+        _frame.append(1.0f);
+        _frame.append(1.0f);
+        _frame.append(1.0f);
+        _frame.append(1.0f);
+
+        _frame.append((float) _bounds.maxX + 4);
+        _frame.append((float) _bounds.maxY + 4);
+        _frame.append(1.0f);
+        _frame.append(1.0f);
+        _frame.append(1.0f);
+        _frame.append(1.0f);
+        _frame.append(1.0f);
+
+        _frame.append((float) _bounds.maxX + 4);
+        _frame.append((float) _bounds.minY - 4);
+        _frame.append(1.0f);
+        _frame.append(1.0f);
+        _frame.append(1.0f);
+        _frame.append(1.0f);
+        _frame.append(0.0f);
+
+        _frame.append((float) _bounds.minX - 4);
+        _frame.append((float) _bounds.minY - 4);
+        _frame.append(1.0f);
+        _frame.append(1.0f);
+        _frame.append(1.0f);
+        _frame.append(0.0f);
+        _frame.append(0.0f);
+
+        _verts.append((float) _bounds.minX);
+        _verts.append((float) _bounds.minY);
+        _verts.append(1.0f);
+        _verts.append(1.0f);
+        _verts.append(1.0f);
+        _verts.append(0.0f);
+        _verts.append(0.0f);
+
+        _verts.append((float) _bounds.minX);
+        _verts.append((float) _bounds.maxY);
+        _verts.append(1.0f);
+        _verts.append(1.0f);
+        _verts.append(1.0f);
+        _verts.append(0.0f);
+        _verts.append(1.0f);
+
+        _verts.append((float) _bounds.maxX);
+        _verts.append((float) _bounds.maxY);
+        _verts.append(1.0f);
+        _verts.append(1.0f);
+        _verts.append(1.0f);
+        _verts.append(1.0f);
+        _verts.append(1.0f);
+
+        _verts.append((float) _bounds.maxX);
+        _verts.append((float) _bounds.maxY);
+        _verts.append(1.0f);
+        _verts.append(1.0f);
+        _verts.append(1.0f);
+        _verts.append(1.0f);
+        _verts.append(1.0f);
+
+        _verts.append((float) _bounds.maxX);
+        _verts.append((float) _bounds.minY);
+        _verts.append(1.0f);
+        _verts.append(1.0f);
+        _verts.append(1.0f);
+        _verts.append(1.0f);
+        _verts.append(0.0f);
+
+        _verts.append((float) _bounds.minX);
+        _verts.append((float) _bounds.minY);
+        _verts.append(1.0f);
+        _verts.append(1.0f);
+        _verts.append(1.0f);
+        _verts.append(0.0f);
+        _verts.append(0.0f);
     }
 }

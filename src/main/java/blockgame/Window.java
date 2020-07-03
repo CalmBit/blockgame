@@ -7,8 +7,6 @@ import blockgame.gl.ShaderProgram;
 import blockgame.gl.Texture;
 import blockgame.gl.VertexShader;
 import blockgame.render.*;
-import blockgame.util.FloatList;
-import blockgame.util.FloatListCache;
 import blockgame.worker.BindChunkQueue;
 import blockgame.worker.DecoratorPool;
 import blockgame.worker.GeneratorPool;
@@ -92,8 +90,15 @@ public class Window {
         init();
         loop();
 
+        GeneratorPool.shutdown();
+        DecoratorPool.shutdown();
+        RenderPool.shutdown();
+
         Callbacks.glfwFreeCallbacks(_window);
-        GLFW.glfwSetErrorCallback(null).free();
+        GLFW.glfwDestroyWindow(_window);
+
+        GLFW.glfwTerminate();
+        GLFW.glfwSetErrorCallback(null);
     }
 
     private void init() throws IOException {
@@ -295,7 +300,7 @@ public class Window {
                 FontRenderer.FONT_RENDERER.renderWithShadow(
                         4.0f,
                         2.0f,
-                        "BlockGame pre-062320 (FPS: "+_fps+" / TPS: "+_tps+")",
+                        "BlockGame pre-070320 (FPS: "+_fps+" / TPS: "+_tps+")",
                         1.0f
                 );
                 FontRenderer.FONT_RENDERER.renderWithShadow(

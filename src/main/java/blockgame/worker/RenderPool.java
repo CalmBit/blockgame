@@ -6,6 +6,7 @@ import blockgame.world.World;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class RenderPool {
     private final ThreadPoolExecutor pool;
@@ -15,6 +16,7 @@ public class RenderPool {
 
     private RenderPool() {
         pool = (ThreadPoolExecutor)Executors.newFixedThreadPool(MAX_THREAD_COUNT);
+        pool.setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardPolicy());
     }
 
     public static void enqueueChunkRender(World world, Chunk chunk, boolean cascade) {
@@ -22,8 +24,10 @@ public class RenderPool {
             return;
         chunk.isRendering = true;
         INSTANCE.pool.execute(() -> {
-            if(!chunk.hasGenerated)
+            if(!chunk.hasGenerated) {
+                chunk.isRendering = false;
                 return;
+            }
             for (EnumRenderLayer l : EnumRenderLayer.VALUES) {
                 chunk.dirty = false;
                 chunk.isRendering = false;
@@ -46,5 +50,9 @@ public class RenderPool {
     }
     public static int queueSize() {
         return INSTANCE.pool.getQueue().size();
+    }
+
+    public static void shutdown() {
+        INSTANCE.pool.shutdownNow();
     }
 }

@@ -5,6 +5,7 @@ import blockgame.world.World;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class GeneratorPool {
     private final ThreadPoolExecutor pool;
@@ -16,6 +17,7 @@ public class GeneratorPool {
 
     private GeneratorPool() {
         pool = (ThreadPoolExecutor)Executors.newFixedThreadPool(MAX_THREAD_COUNT);
+        pool.setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardPolicy());
     }
 
     public static void enqueueChunkGen(World world, Chunk chunk) {
@@ -38,6 +40,10 @@ public class GeneratorPool {
 
     public static int queueSize() {
         return INSTANCE.pool.getQueue().size();
+    }
+
+    public static void shutdown() {
+        INSTANCE.pool.shutdownNow();
     }
 
 }

@@ -22,6 +22,8 @@ public class Camera {
 
     public CameraMode mode = CameraMode.FIRST;
 
+    public static int fov = 70;
+
     public void updateCameraRotation(double x, double y) {
         double xOffset = x - mlastX;
         double yOffset = y - mlastY;
@@ -65,7 +67,7 @@ public class Camera {
                         new Vector3f(_pos.x + _front.x, _pos.y + _front.y, _pos.z + _front.z),
                         new Vector3f(0.0f,1.0f,0.0f));
         lastProj = new Matrix4f()
-                .perspective((float)Math.toRadians(90.0),800.0f/600.0f,1.0f,renderDistance);
+                .perspective((float)Math.toRadians(fov),800.0f/600.0f,1.0f,renderDistance);
         return new ViewProj(lastView, lastProj);
     }
 
