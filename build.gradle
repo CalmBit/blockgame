@@ -5,7 +5,7 @@ plugins {
 }
 
 group 'io.calmbit'
-version '1.0-SNAPSHOT'
+version 'pre-070320'
 
 project.ext.lwjglVersion = "3.2.2"
 project.ext.jomlVersion = "1.9.15"
@@ -64,12 +64,15 @@ sourceSets.main.output.resourcesDir = "build/classes/java/main"
 
 jar {
     manifest {
-        attributes 'Main-Class': 'Blockgame'
+        attributes(
+            'Main-Class': 'blockgame.Blockgame',
+            "Class-Path": sourceSets.main.runtimeClasspath.collect { it.getName() }.join(' ')
+        )
     }
 }
 
 application {
-    mainClassName = 'Blockgame'
+    mainClassName = 'blockgame.Blockgame'
     applicationDefaultJvmArgs = ['-XstartOnFirstThread']
 }
 
