@@ -27,6 +27,7 @@ public class DensityGenerator implements IGenerator {
     private static final TileState AIR = new TileState(BlockRegistry.AIR);
     private static final TileState GRASS = new TileState(BlockRegistry.GRASS);
     private static final TileState STONE = new TileState(BlockRegistry.STONE);
+    private static final TileState BASALT = new TileState(BlockRegistry.BASALT);
     private static final TileState SAND = new TileState(BlockRegistry.SAND);
     private static final TileState WATER = new TileState(BlockRegistry.WATER);
     private static final TileState DIRT = new TileState(BlockRegistry.DIRT);
@@ -67,10 +68,10 @@ public class DensityGenerator implements IGenerator {
         _decorators.add(new TreeDecorator(
                 new TileState(BlockRegistry.BIRCH_LOG),
                 new TileState(BlockRegistry.BIRCH_LEAVES), 1, STAY_ON_GRASS));
-        _decorators.add(new OreDecorator(new TileState(BlockRegistry.COAL_ORE), 12, 12, 78, 20, REPLACE_ONLY_STONE ));
-        _decorators.add(new OreDecorator(new TileState(BlockRegistry.IRON_ORE), 8, 4, 64, 12, REPLACE_ONLY_STONE));
-        _decorators.add(new OreDecorator(new TileState(BlockRegistry.GOLD_ORE), 4, 4, 32, 8, REPLACE_ONLY_STONE));
-        _decorators.add(new OreDecorator(new TileState(BlockRegistry.DIAMOND_ORE), 6, 4, 16, 8, REPLACE_ONLY_STONE));
+        _decorators.add(new OreDecorator(new TileState(BlockRegistry.COAL_ORE), 24, 12, 78, 20, REPLACE_ONLY_STONE ));
+        _decorators.add(new OreDecorator(new TileState(BlockRegistry.IRON_ORE), 16, 4, 64, 12, REPLACE_ONLY_STONE));
+        _decorators.add(new OreDecorator(new TileState(BlockRegistry.GOLD_ORE), 8, 4, 32, 8, REPLACE_ONLY_STONE));
+        _decorators.add(new OreDecorator(new TileState(BlockRegistry.DIAMOND_ORE), 12, 4, 16, 8, REPLACE_ONLY_STONE));
         _decorators.add(new DungeonDecorator(2, 16, 32));
     }
 
@@ -96,8 +97,10 @@ public class DensityGenerator implements IGenerator {
                         } else if(y >= maxHeight - 5 && y <= maxHeight - 1) {
                             tile = DIRT;
 
-                        } else {
+                        } else if(y >= 12){
                             tile = STONE;
+                        } else if(y >= 0 && y <= 12) {
+                            tile = BASALT;
                         }
                     } else {
                         if(y >= 0 && y <= 10) {

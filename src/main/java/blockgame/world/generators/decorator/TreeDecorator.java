@@ -35,7 +35,7 @@ public class TreeDecorator implements IDecorator {
             // TODO: Change cX/cZ if the tree goes out of bounds
             if (!_stayPredicate.test(world.getTileAtAdjusted(cX, cZ, x, y, z)))
                 continue;
-            int height = world.random.nextInt(6) + 2;
+            int height = world.random.nextInt(3) + 5;
 
             for (int i = 1;i <= height;i++) {
                 world.setTileAtAdjusted(cX, cZ, x, y + i, z, TilePalette.getTileRepresentation(_log));
@@ -50,7 +50,7 @@ public class TreeDecorator implements IDecorator {
                         }
                     }
                 }
-                else if(i >= height - 3) {
+                else if(i > height - 3) {
                     for (int j = -2;j <= 2;j++) {
                         for (int k = -2; k <= 2; k++) {
                             if ((Math.abs(j) == 2 || Math.abs(k) == 2) && Math.abs(j) == Math.abs(k))

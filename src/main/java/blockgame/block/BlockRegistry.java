@@ -34,6 +34,7 @@ public class BlockRegistry {
 
     public static final Block BIRCH_LOG = register(new BlockLog(LogType.BIRCH));
     public static final Block BIRCH_LEAVES = register(new BlockLeaves(LogType.BIRCH));
+    public static final Block BASALT = register(new Block(new RegistryName("blockgame", "basalt")).setUV(new UVPair(4, 2)));
 
     public static final Block UVTEST = register(new Block(new RegistryName("blockgame", "uvtest")).setUV(new UVPair(14, 15)));
 

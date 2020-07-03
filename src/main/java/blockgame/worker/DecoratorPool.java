@@ -26,7 +26,6 @@ public class DecoratorPool {
                     && checkChunkGen(world, chunk.cX, chunk.cZ + 1)
                     && checkChunkGen(world, chunk.cX + 1, chunk.cZ + 1)) {
                 chunk.decorate(world);
-                RenderPool.enqueueChunkRender(world, chunk, true);
             }
         });
     }
