@@ -3,7 +3,7 @@ package blockgame.world.generators;
 import blockgame.block.BlockRegistry;
 import blockgame.block.TilePalette;
 import blockgame.block.TileState;
-import blockgame.util.ValuePerlin;
+import blockgame.world.World;
 import blockgame.world.generators.decorator.DungeonDecorator;
 import blockgame.world.generators.decorator.IDecorator;
 import blockgame.world.generators.decorator.OreDecorator;
@@ -12,7 +12,6 @@ import org.jetbrains.annotations.NotNull;
 import org.spongepowered.noise.module.Module;
 import org.spongepowered.noise.module.modifier.Exponent;
 import org.spongepowered.noise.module.source.Perlin;
-import blockgame.world.World;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,10 +51,12 @@ public class DensityGenerator implements IGenerator {
         exp.setExponent(8);
         act_gen = exp;
         formation = new Perlin();
-        formation.setFrequency(0.125);
+        formation.setFrequency(0.4);
+        formation.setPersistence(0.515);
+        formation.setLacunarity(0.49);
         exp2 = new Exponent();
         exp2.setSourceModule(0, formation);
-        exp2.setExponent(16);
+        exp2.setExponent(24);
         act_form = exp2;
     }
 
@@ -70,7 +71,6 @@ public class DensityGenerator implements IGenerator {
         _decorators.add(new OreDecorator(new TileState(BlockRegistry.IRON_ORE), 8, 4, 64, 12, REPLACE_ONLY_STONE));
         _decorators.add(new OreDecorator(new TileState(BlockRegistry.GOLD_ORE), 4, 4, 32, 8, REPLACE_ONLY_STONE));
         _decorators.add(new OreDecorator(new TileState(BlockRegistry.DIAMOND_ORE), 6, 4, 16, 8, REPLACE_ONLY_STONE));
-        _decorators.add(new OreDecorator(new TileState(BlockRegistry.AIR), 6, 4, 64, 64, REPLACE_ONLY_STONE));
         _decorators.add(new DungeonDecorator(2, 16, 32));
     }
 
@@ -87,12 +87,15 @@ public class DensityGenerator implements IGenerator {
                 maxHeight += (int)(h * 64.0);
                 maxHeight = Integer.max(32, Integer.min(maxHeight, 127));
                 for (int y = 0;y <= maxHeight;y++) {
-                    double density = act_form.getValue(nX / 12.0, y / 4.0, nZ / 12.0);
-                    density += ((64 - maxHeight) / 32.0);
+                    double density = act_form.getValue(nX / 8.0, y / 4.0, nZ / 8.0);
+                    density -= ((64 - y) / 256.0);
                     TileState tile = AIR;
                     if(density >= 0.15)  {
                         if(y == maxHeight) {
                             tile = GRASS;
+                        } else if(y >= maxHeight - 5 && y <= maxHeight - 1) {
+                            tile = DIRT;
+
                         } else {
                             tile = STONE;
                         }
