@@ -8,14 +8,14 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 public class GeneratorPool {
     private final ThreadPoolExecutor pool;
-    private static final int MAX_THREAD_COUNT = 4;
+    private static final int MAX_THREAD_COUNT = 12;
     private static final int MAX_X = 8;
     private static final int MAX_Z = 8;
 
     public static final GeneratorPool INSTANCE = new GeneratorPool();
 
     private GeneratorPool() {
-        pool = (ThreadPoolExecutor)Executors.newFixedThreadPool(4);
+        pool = (ThreadPoolExecutor)Executors.newFixedThreadPool(MAX_THREAD_COUNT);
     }
 
     public static void enqueueChunkGen(World world, Chunk chunk) {

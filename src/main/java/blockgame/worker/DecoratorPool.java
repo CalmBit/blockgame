@@ -8,14 +8,14 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 public class DecoratorPool {
     private final ThreadPoolExecutor pool;
-    private static final int MAX_THREAD_COUNT = 4;
+    private static final int MAX_THREAD_COUNT = 12;
     private static final int MAX_X = 8;
     private static final int MAX_Z = 8;
 
     public static final DecoratorPool INSTANCE = new DecoratorPool();
 
     private DecoratorPool() {
-        pool = (ThreadPoolExecutor) Executors.newFixedThreadPool(4);
+        pool = (ThreadPoolExecutor) Executors.newFixedThreadPool(MAX_THREAD_COUNT);
     }
 
     public static void enqueueChunkDecoration(World world, Chunk chunk) {

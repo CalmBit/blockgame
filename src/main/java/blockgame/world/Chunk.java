@@ -17,6 +17,7 @@ public class Chunk {
     public boolean hasGenerated = false;
     public boolean isDecorating = false;
     public boolean hasDecorated = false;
+    public boolean isRendering = false;
     public boolean isLoaded = false;
     public boolean dirty = false;
 

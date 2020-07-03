@@ -11,8 +11,8 @@ import java.util.Random;
 
 public class World {
     private LongMap<Chunk> _chunks = new LongMap<>();
-    private int _seed = 0xDEADBEEF;
-    public Random random = new Random(_seed);
+    private int _seed;
+    public Random random;
     public Random tickRandom = new Random();
     public static final int MAX_X = 8;
     public static final int MAX_Z = 8;
@@ -20,6 +20,9 @@ public class World {
     public WorldType worldType = WorldType.DEFAULT;
 
     public World() {
+        Random r = new Random();
+        _seed = r.nextInt();
+        random = new Random(_seed);
         long cPos = 0;
         for (int x = -MAX_X; x < MAX_X; x++) {
             for (int z = -MAX_Z; z < MAX_Z; z++) {
@@ -147,11 +150,7 @@ public class World {
     }
 
     public long calculateChunkPosition(int cX, int cZ) {
-        long xC = cX;
-        long zC = cZ;
-        long conv = xC << 32;
-        long last = (conv + (cZ & 0xFFFFFFFFL));
-        return last;
+        return (((long)cX << 32) + (cZ & 0xFFFFFFFFL));
     }
 
     public long getChunkPositionFromBlockPosition(int x, int z) {

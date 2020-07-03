@@ -11,8 +11,9 @@ public class FloatListCache {
         private FloatList list = new FloatList();
 
         public void free() {
-            free = true;
             list.clear();
+            free = true;
+            _inUse--;
         }
 
         public void addToList(float ...f) {
@@ -43,9 +44,9 @@ public class FloatListCache {
 
     private static int _len = 0;
     private static int _capacity = 64;
+    public static int _inUse = 0;
     private static Entry[] _cache = new Entry[_capacity];
     private static ReentrantLock lock = new ReentrantLock();
-
 
     public static Entry reserve() {
         lock.lock();
@@ -53,6 +54,7 @@ public class FloatListCache {
             Entry l = _cache[i];
             if(l.free) {
                 l.free = false;
+                _inUse++;
                 lock.unlock();
                 return l;
             }
@@ -66,6 +68,7 @@ public class FloatListCache {
         Entry en = new Entry();
         _cache[_len++] = en;
         en.free = false;
+        _inUse++;
         lock.unlock();
         return en;
     }

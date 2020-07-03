@@ -7,11 +7,14 @@ import blockgame.gl.ShaderProgram;
 import blockgame.gl.Texture;
 import blockgame.gl.VertexShader;
 import blockgame.render.*;
+import blockgame.util.FloatList;
+import blockgame.util.FloatListCache;
 import blockgame.worker.BindChunkQueue;
 import blockgame.worker.DecoratorPool;
 import blockgame.worker.GeneratorPool;
 import blockgame.worker.RenderPool;
 import blockgame.world.World;
+import blockgame.world.generators.DensityGenerator;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
@@ -68,9 +71,9 @@ public class Window {
     private Matrix4f _proj = new Matrix4f();
 
     private Matrix4f _guiMat = new Matrix4f()
-                                            .ortho(0.0f, _wWidth, _wHeight, 0.0f, -1.0f, 10.0f);
+                                    .ortho(0.0f, _wWidth, _wHeight, 0.0f, -1.0f, 10.0f);
     private Matrix4f _overMat = new Matrix4f()
-                                            .ortho(0.0f, 1.0f, 1.0f, 0.0f, -1.0f, 10.0f);
+                                    .ortho(0.0f, 1.0f, 1.0f, 0.0f, -1.0f, 10.0f);
 
     private MemoryStack _stack = null;
 
@@ -79,7 +82,7 @@ public class Window {
     private static final boolean[] keyStates = new boolean[GLFW.GLFW_KEY_LAST+1];
 
     private boolean _initialGenerationDone = false;
-    private GuiLoadingScreen _loadScreen = new GuiLoadingScreen();
+    private GuiLoadingScreen _loadScreen;
 
     private double _lastFrame = 0.0;
 
@@ -244,6 +247,8 @@ public class Window {
 
             PlaneRenderer.setColors(_world.worldType);
 
+            _loadScreen = new GuiLoadingScreen(DensityGenerator.act_gen, DensityGenerator.act_form);
+
             GuiRenderer.attachScreen(_loadScreen);
         } catch (Exception e) {
             throw e;
@@ -354,8 +359,6 @@ public class Window {
 
                 GL33.glEnable(GL33.GL_DEPTH_TEST);
 
-                BindChunkQueue.bindChunks(_prog);
-
                 int px = ((int)_camera.getPos().x >> 4);
                 int pz = ((int)_camera.getPos().z >> 4);
 
@@ -392,16 +395,16 @@ public class Window {
 
                 FontRenderer.FONT_RENDERER.draw(_proj);
 
-                _loadScreen.chunksLeft = GeneratorPool.queueSize();
-
                 GuiRenderer.renderScreen(_proj);
 
-                if(GeneratorPool.queueSize() == 0) {
+                if(GeneratorPool.queueSize() == 0 && RenderPool.queueSize() == 0) {
                     GLFW.glfwSetInputMode(_window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
                     GuiRenderer.clearScreen();
                     _initialGenerationDone = true;
                 }
             }
+
+            BindChunkQueue.bindChunks(_prog);
 
             GLFW.glfwSwapBuffers(_window);
             GLFW.glfwPollEvents();
