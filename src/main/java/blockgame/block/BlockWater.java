@@ -1,6 +1,7 @@
 package blockgame.block;
 
-import blockgame.registry.RegistryName;
+import blockgame.render.world.RenderLayer;
+import blockgame.util.registry.RegistryName;
 
 import static org.lwjgl.opengl.GL33.*;
 
@@ -15,8 +16,8 @@ public class BlockWater extends Block {
     }
 
     @Override
-    public EnumRenderLayer renderLayer() {
-        return EnumRenderLayer.TRANSLUCENT;
+    public RenderLayer renderLayer() {
+        return RenderLayer.TRANSLUCENT;
     }
 
     @Override

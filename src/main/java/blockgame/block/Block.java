@@ -1,8 +1,9 @@
 package blockgame.block;
 
-import blockgame.gl.UVPair;
-import blockgame.registry.IRegistryEntry;
-import blockgame.registry.RegistryName;
+import blockgame.render.gl.texture.UVPair;
+import blockgame.render.world.RenderLayer;
+import blockgame.util.registry.IRegistryEntry;
+import blockgame.util.registry.RegistryName;
 import blockgame.world.World;
 import org.joml.Vector3f;
 
@@ -22,7 +23,7 @@ public class Block implements IRegistryEntry {
         _name = name;
     }
 
-    public UVPair getUVForFace(EnumDirection face) {
+    public UVPair getUVForFace(Direction face) {
         return _uv != null ? _uv : UVPair.MISSING_UV;
     }
 
@@ -35,9 +36,9 @@ public class Block implements IRegistryEntry {
         return true;
     }
 
-    public boolean shouldRenderFace(World world, int cX, int cZ, int rY, int x, int y, int z, EnumDirection face) {
+    public boolean shouldRenderFace(World world, int cX, int cZ, int rY, int x, int y, int z, Direction face) {
         TileState other = world.getTileAt(face.getX(world.adjustChunk(cX, x)), face.getY(y + (16 * rY)), face.getZ(world.adjustChunk(cZ, z)));
-        if (face == EnumDirection.UP && y + (16 * rY) == 127)
+        if (face == Direction.UP && y + (16 * rY) == 127)
             return true;
         if (other != null) {
             return !other.shouldRender() || (!other.isOpaque() && this.isOpaque());
@@ -49,8 +50,8 @@ public class Block implements IRegistryEntry {
         return true;
     }
 
-    public EnumRenderLayer renderLayer() {
-        return EnumRenderLayer.NORMAL;
+    public RenderLayer renderLayer() {
+        return RenderLayer.NORMAL;
     }
 
     public void preRender() {

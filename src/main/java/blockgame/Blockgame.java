@@ -1,5 +1,7 @@
 package blockgame;
 
+import blockgame.client.Window;
+import blockgame.util.Logger;
 import org.apache.logging.log4j.Level;
 
 public class Blockgame {

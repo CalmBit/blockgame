@@ -1,10 +1,10 @@
 package blockgame.block;
 
-import blockgame.gl.UVPair;
-import blockgame.registry.DuplicateKeyException;
-import blockgame.registry.Registry;
-import blockgame.registry.RegistryName;
-import org.joml.Vector2f;
+import blockgame.util.Logger;
+import blockgame.render.gl.texture.UVPair;
+import blockgame.util.exception.DuplicateKeyException;
+import blockgame.util.registry.Registry;
+import blockgame.util.registry.RegistryName;
 import org.joml.Vector3f;
 
 public class BlockRegistry {
@@ -45,7 +45,8 @@ public class BlockRegistry {
         try {
             return _REGISTRY.register(block);
         } catch(DuplicateKeyException e) {
-            System.err.println(e.getMessage());
+            Logger.LOG.fatal("Duplicate block name registered!");
+            Logger.LOG.fatal(e.getMessage());
             System.exit(-1);
             return null;
         }

@@ -1,11 +1,12 @@
 package blockgame.world;
 
+import blockgame.util.Logger;
 import blockgame.block.BlockRegistry;
-import blockgame.block.EnumRenderLayer;
+import blockgame.render.world.RenderLayer;
 import blockgame.block.TileState;
-import blockgame.util.LongMap;
+import blockgame.util.container.LongMap;
 import org.lwjgl.system.MemoryStack;
-import blockgame.worker.GeneratorPool;
+import blockgame.util.worker.GeneratorPool;
 
 import java.util.Random;
 
@@ -50,13 +51,13 @@ public class World {
 
         _chunks.forEachValue((chunk) -> {
             stack[0] = MemoryStack.stackPush();
-            chunk.draw(stack[0], EnumRenderLayer.NORMAL, uniTrans, timer);
+            chunk.draw(stack[0], RenderLayer.NORMAL, uniTrans, timer);
             stack[0].pop();
         });
 
         _chunks.forEachValue((chunk) -> {
             stack[0] = MemoryStack.stackPush();
-            chunk.draw(stack[0], EnumRenderLayer.TRANSLUCENT, uniTrans, timer);
+            chunk.draw(stack[0], RenderLayer.TRANSLUCENT, uniTrans, timer);
             stack[0].pop();
         });
     }
@@ -85,7 +86,7 @@ public class World {
         if (chunkExists(cPos)) {
             _chunks.get(cPos).setTileAt(x & 15, y, z & 15, tile);
         } else {
-            System.out.println("Missing Chunk! X=" + x + " Y=" + y + " Z=" + z + " cpos=" + (cPos >> 32) + "," + ((int)cPos & 0xFFFFFFFFL));
+            Logger.LOG.error("Missing Chunk! X=" + x + " Y=" + y + " Z=" + z + " cpos=" + (cPos >> 32) + "," + ((int)cPos & 0xFFFFFFFFL));
         }
     }
 
@@ -105,7 +106,7 @@ public class World {
             }
             return y;
         }
-        System.err.println("Chunk not found...");
+        Logger.LOG.error("Chunk not found on call to getTopTilePos!");
         return -1;
     }
 

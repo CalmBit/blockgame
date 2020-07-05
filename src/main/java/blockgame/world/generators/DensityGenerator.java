@@ -3,7 +3,6 @@ package blockgame.world.generators;
 import blockgame.block.BlockRegistry;
 import blockgame.block.TilePalette;
 import blockgame.block.TileState;
-import blockgame.util.ValuePerlin;
 import blockgame.world.World;
 import blockgame.world.generators.decorator.DungeonDecorator;
 import blockgame.world.generators.decorator.IDecorator;

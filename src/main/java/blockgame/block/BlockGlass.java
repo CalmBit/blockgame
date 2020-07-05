@@ -1,6 +1,6 @@
 package blockgame.block;
 
-import blockgame.registry.RegistryName;
+import blockgame.util.registry.RegistryName;
 
 public class BlockGlass extends Block {
     public BlockGlass() {

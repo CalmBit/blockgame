@@ -1,7 +1,7 @@
 package blockgame.block;
 
-import blockgame.gl.UVPair;
-import blockgame.registry.RegistryName;
+import blockgame.render.gl.texture.UVPair;
+import blockgame.util.registry.RegistryName;
 
 public class BlockGrass extends Block {
     private static final UVPair TOP = new UVPair(2, 0);
@@ -13,7 +13,7 @@ public class BlockGrass extends Block {
     }
 
     @Override
-    public UVPair getUVForFace(EnumDirection face) {
+    public UVPair getUVForFace(Direction face) {
         switch(face) {
             case UP:
                 return TOP;

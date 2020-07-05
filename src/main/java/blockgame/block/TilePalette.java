@@ -5,9 +5,8 @@ import java.util.List;
 
 public class TilePalette {
     private static final List<TileState> _PALETTE = new ArrayList<>();
-    public static TilePalette INSTANCE = new TilePalette();
 
-    private TilePalette() {
+    static {
         _PALETTE.add(new TileState(BlockRegistry.AIR));
     }
 

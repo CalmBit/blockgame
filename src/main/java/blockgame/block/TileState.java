@@ -1,6 +1,7 @@
 package blockgame.block;
 
-import blockgame.gl.UVPair;
+import blockgame.render.gl.texture.UVPair;
+import blockgame.render.world.RenderLayer;
 import org.joml.Vector3f;
 
 public class TileState {
@@ -10,7 +11,7 @@ public class TileState {
         this.block = block;
     }
 
-    public UVPair getUVForFace(EnumDirection face) {
+    public UVPair getUVForFace(Direction face) {
        return  block.getUVForFace(face);
     }
 
@@ -21,7 +22,7 @@ public class TileState {
         return block.isOpaque();
     }
 
-    public EnumRenderLayer renderLayer() {
+    public RenderLayer renderLayer() {
          return block.renderLayer();
     }
 

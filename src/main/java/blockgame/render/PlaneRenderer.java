@@ -1,13 +1,13 @@
 package blockgame.render;
 
-import blockgame.gl.FragmentShader;
-import blockgame.gl.ShaderProgram;
-import blockgame.gl.VertexShader;
+import blockgame.render.gl.shader.FragmentShader;
+import blockgame.render.gl.shader.ShaderProgram;
+import blockgame.render.gl.shader.VertexShader;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL33;
 import org.lwjgl.system.MemoryStack;
-import blockgame.util.FloatList;
+import blockgame.util.container.FloatList;
 import blockgame.world.WorldType;
 
 import java.io.File;

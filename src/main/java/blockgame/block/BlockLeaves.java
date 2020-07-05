@@ -1,7 +1,8 @@
 package blockgame.block;
 
-import blockgame.gl.UVPair;
-import blockgame.registry.RegistryName;
+import blockgame.render.gl.texture.UVPair;
+import blockgame.render.world.RenderLayer;
+import blockgame.util.registry.RegistryName;
 import org.joml.Vector3f;
 
 public class BlockLeaves extends Block {
@@ -19,12 +20,12 @@ public class BlockLeaves extends Block {
     }
 
     @Override
-    public EnumRenderLayer renderLayer() {
-        return EnumRenderLayer.TRANSLUCENT;
+    public RenderLayer renderLayer() {
+        return RenderLayer.TRANSLUCENT;
     }
 
     @Override
-    public UVPair getUVForFace(EnumDirection face) {
+    public UVPair getUVForFace(Direction face) {
         return _type.getLeaves();
     }
 

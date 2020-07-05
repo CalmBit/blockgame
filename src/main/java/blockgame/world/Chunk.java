@@ -1,12 +1,11 @@
 package blockgame.world;
 
-import blockgame.block.EnumRenderLayer;
+import blockgame.render.world.RenderLayer;
 import blockgame.block.TileState;
-import blockgame.gl.ShaderProgram;
+import blockgame.render.gl.shader.ShaderProgram;
 import blockgame.util.FloatListCache;
 import org.lwjgl.system.MemoryStack;
-import blockgame.util.FloatList;
-import blockgame.worker.RenderPool;
+import blockgame.util.worker.RenderPool;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -63,7 +62,7 @@ public class Chunk {
         dirty = true;
     }
 
-    public List<FloatListCache.Entry> buildRenderData(World world, EnumRenderLayer l) {
+    public List<FloatListCache.Entry> buildRenderData(World world, RenderLayer l) {
         List<FloatListCache.Entry> verts = new ArrayList<>();
         for (Region region : _regions) {
             verts.add(region.buildRenderData(world, cX, cZ, l));
@@ -71,7 +70,7 @@ public class Chunk {
         return verts;
     }
 
-    public void draw(MemoryStack stack, EnumRenderLayer l, int uniTrans, float timer) {
+    public void draw(MemoryStack stack, RenderLayer l, int uniTrans, float timer) {
         for (Region r : _regions) {
             r.draw(stack, l, uniTrans, timer);
         }
@@ -91,7 +90,7 @@ public class Chunk {
         }
     }
 
-    public void bindRenderData(List<FloatListCache.Entry> verts, EnumRenderLayer l, ShaderProgram prog) {
+    public void bindRenderData(List<FloatListCache.Entry> verts, RenderLayer l, ShaderProgram prog) {
         for(int i = 0;i < _regions.length;i++) {
             _regions[i].bindData(verts.get(i), l, prog);
             verts.get(i).free();

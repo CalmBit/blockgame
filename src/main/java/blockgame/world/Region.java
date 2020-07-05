@@ -1,16 +1,15 @@
 package blockgame.world;
 
-import blockgame.block.EnumRenderLayer;
+import blockgame.render.world.RenderLayer;
 import blockgame.block.TilePalette;
 import blockgame.block.TileState;
-import blockgame.gl.ShaderProgram;
+import blockgame.render.gl.shader.ShaderProgram;
 import blockgame.util.FloatListCache;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL33;
 import org.lwjgl.system.MemoryStack;
 import blockgame.render.ShapeHelper;
-import blockgame.util.FloatList;
-import blockgame.util.IntList;
+import blockgame.util.container.IntList;
 
 import java.util.Random;
 
@@ -19,14 +18,14 @@ public class Region {
     private int _rY;
     private int _rZ;
     private IntList _region = new IntList(16*16*16);
-    private IntList vao = new IntList(EnumRenderLayer.VALUES.length);
-    private IntList vbo = new IntList(EnumRenderLayer.VALUES.length);
-    private IntList vertSize = new IntList(EnumRenderLayer.VALUES.length);
+    private IntList vao = new IntList(RenderLayer.VALUES.length);
+    private IntList vbo = new IntList(RenderLayer.VALUES.length);
+    private IntList vertSize = new IntList(RenderLayer.VALUES.length);
 
     private Matrix4f trans;
 
     public Region(int rX, int rY, int rZ) {
-        for(EnumRenderLayer l : EnumRenderLayer.VALUES) {
+        for(RenderLayer l : RenderLayer.VALUES) {
             vao.set(l.ordinal(),  GL33.glGenVertexArrays());
             GL33.glBindVertexArray(vao.get(l.ordinal()));
             vbo.set(l.ordinal(), GL33.glGenBuffers());
@@ -41,7 +40,7 @@ public class Region {
         _rZ = rZ;
     }
 
-    public FloatListCache.Entry buildRenderData(World world, int cX, int cZ, EnumRenderLayer l) {
+    public FloatListCache.Entry buildRenderData(World world, int cX, int cZ, RenderLayer l) {
         FloatListCache.Entry e = FloatListCache.reserve();
         for (int y = 0;y < 16;y++) {
             for (int z = 0;z < 16;z++) {
@@ -56,7 +55,7 @@ public class Region {
         return e;
     }
 
-    public void bindData(FloatListCache.Entry verts, EnumRenderLayer l, ShaderProgram prog) {
+    public void bindData(FloatListCache.Entry verts, RenderLayer l, ShaderProgram prog) {
         vertSize.set(l.ordinal(), verts.getList().getLength());
         GL33.glBindVertexArray(vao.get(l.ordinal()));
         GL33.glBindBuffer(GL33.GL_ARRAY_BUFFER, vbo.get(l.ordinal()));
@@ -79,7 +78,7 @@ public class Region {
         _region.set((y*(16*16))+(z*16)+x, tile);
     }
 
-    public void draw(MemoryStack stack, EnumRenderLayer l, int uniTrans, float timer) {
+    public void draw(MemoryStack stack, RenderLayer l, int uniTrans, float timer) {
         if(vertSize.get(l.ordinal()) == 0)
             return;
         GL33.glBindVertexArray(vao.get(l.ordinal()));

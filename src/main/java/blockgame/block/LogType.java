@@ -1,6 +1,6 @@
 package blockgame.block;
 
-import blockgame.gl.UVPair;
+import blockgame.render.gl.texture.UVPair;
 
 public enum LogType {
     OAK("oak", new UVPair(15, 0), new UVPair(14, 0), new UVPair(0, 1)),

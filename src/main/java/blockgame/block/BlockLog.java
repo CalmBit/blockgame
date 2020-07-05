@@ -1,7 +1,7 @@
 package blockgame.block;
 
-import blockgame.gl.UVPair;
-import blockgame.registry.RegistryName;
+import blockgame.render.gl.texture.UVPair;
+import blockgame.util.registry.RegistryName;
 
 public class BlockLog extends Block {
     private LogType _type;
@@ -12,7 +12,7 @@ public class BlockLog extends Block {
     }
 
     @Override
-    public UVPair getUVForFace(EnumDirection face) {
+    public UVPair getUVForFace(Direction face) {
         switch(face) {
             case UP:
             case DOWN:
