@@ -2,6 +2,8 @@ package blockgame.util;
 
 import blockgame.Logger;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -18,10 +20,12 @@ public class FloatListCache {
          * modified by the owning thread.
          */
         private boolean free = true;
+        private boolean dirty = false;
         private FloatList list = new FloatList();
 
         public void free() {
             list.clear();
+            dirty = true;
             free = true;
             _inUse--;
         }
@@ -42,6 +46,10 @@ public class FloatListCache {
             return list;
         }
 
+        private FloatList forceGetList() {
+            return list;
+        }
+
         public float[] getStore() {
             if(free) {
                 Logger.LOG.error("Tried to getStore when FloatList was free");
@@ -52,14 +60,20 @@ public class FloatListCache {
     }
 
 
+    private static final int DEFAULT_CAPACITY = 64;
+    private static final int CLEAR_WAIT_MILLIS = 500;
     private static int _len = 0;
-    private static int _capacity = 64;
-    public static int _inUse = 0;
+    private static int _inUse = 0;
+    private static int _capacity = DEFAULT_CAPACITY;
+
     private static Entry[] _cache = new Entry[_capacity];
     private static ReentrantLock lock = new ReentrantLock();
+    private static Instant _lastReserve = Instant.EPOCH;
+
 
     public static Entry reserve() {
         lock.lock();
+        _lastReserve = Instant.now();
         for(int i =0;i < _len;i++) {
             Entry l = _cache[i];
             if(l.free) {
@@ -84,5 +98,36 @@ public class FloatListCache {
         _inUse++;
         lock.unlock();
         return en;
+    }
+
+    /**
+     * FloatLists are re-allocated to match a power of two capacity that can fit all the required data. By
+     * default, FloatLists don't do any internal mediation of their max capacity - preferably, a high
+     * enough or low enough max capacity should be chosen on instantiation. Since the intended usage for
+     * this cache (world rendering VBO data) is extremely variable, we can't pre-select a good maximum.
+     *
+     * There's no sense in re-allocating the buffers while they're still in use, as they'll inevitably
+     * balloon just the same and we'll be stuck with frequent and costly re-allocations, which
+     * we would like to avoid. The VBOs are updated according their _length_, not capacity, so no
+     * garbage data is ever uploaded to the renderer.
+     *
+     * So, we just clean up the FloatLists every time the cache goes 500ms w/o an allocation.
+     */
+    public static void watch() {
+        // The EPOCH here only serves as a tombstone for "don't bother updating because we've yet
+        // to re-allocate since we last cleaned."
+        if(_lastReserve != Instant.EPOCH && Duration.between(_lastReserve, Instant.now()).toMillis() >= CLEAR_WAIT_MILLIS) {
+            lock.lock();
+            for(Entry e : _cache) {
+                // If we can't get the entry, it's in use, or it's not necessary to
+                // clean it, don't bother.
+                if(e == null || !e.free || !e.dirty)
+                    continue;
+                e.forceGetList().resize(FloatList.DEFAULT_CAPACITY, true);
+                e.dirty = false;
+            }
+            lock.unlock();
+            _lastReserve = Instant.EPOCH;
+        }
     }
 }

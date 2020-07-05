@@ -5,12 +5,14 @@ package blockgame.util;
  * the same thing in a comparable generic list.
  */
 public class FloatList {
+
+    public static final int DEFAULT_CAPACITY = 1024;
     /**
      * The current maximum capacity of the list. This is the size that the
      * array is current allocated to, but doesn't represent the actual number
      * of entries to the list.
      */
-    private int _capacity = 1024;
+    private int _capacity = DEFAULT_CAPACITY;
 
     /**
      * The current maximum entry in the list, from `0` to `_capacity`. This value

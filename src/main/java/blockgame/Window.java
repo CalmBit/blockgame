@@ -6,6 +6,7 @@ import blockgame.client.ViewProj;
 import blockgame.gl.*;
 import blockgame.registry.RegistryName;
 import blockgame.render.*;
+import blockgame.util.FloatListCache;
 import blockgame.worker.BindChunkQueue;
 import blockgame.worker.DecoratorPool;
 import blockgame.worker.GeneratorPool;
@@ -338,6 +339,8 @@ public class Window {
         }
 
         BindChunkQueue.bindChunks(_prog);
+
+        FloatListCache.watch();
     }
 
     public void renderWorld() {
@@ -465,6 +468,7 @@ public class Window {
             renderWorld();
             renderGui(runtime);
             updateFps();
+
             /*int px = ((int)_camera.getPos().x >> 4);
             int pz = ((int)_camera.getPos().z >> 4);
 
