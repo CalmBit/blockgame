@@ -1,6 +1,7 @@
 package blockgame;
 
 import blockgame.client.Camera;
+import blockgame.client.GameState;
 import blockgame.client.ViewProj;
 import blockgame.gl.*;
 import blockgame.registry.RegistryName;
@@ -74,7 +75,7 @@ public class Window {
     private Matrix4f _guiMat = new Matrix4f()
                                     .ortho(0.0f, _wWidth, _wHeight, 0.0f, -1.0f, 10.0f);
 
-    private Vector3f atmocolor;
+    private Vector3f atmocolor = new Vector3f(0.0f, 0.0f, 0.0f);
 
     private MemoryStack _stack = null;
 
@@ -82,10 +83,9 @@ public class Window {
 
     private static final boolean[] keyStates = new boolean[GLFW.GLFW_KEY_LAST+1];
 
-    private boolean _initialGenerationDone = false;
-    private GuiLoadingScreen _loadScreen;
-
     private double _lastFrame = 0.0;
+
+    private GameState _state = GameState.SPLASH;
 
     public void run() throws IOException {
         Logger.LOG.debug("[RUN]");
@@ -123,7 +123,7 @@ public class Window {
             throw new RuntimeException("Failed to create Window");
 
         GLFW.glfwSetKeyCallback(_window, (long window, int key, int scancode, int action, int mods) -> {
-            if (!_initialGenerationDone)
+            if (_state != GameState.INGAME)
                 return;
             if (key == GLFW.GLFW_KEY_ESCAPE && action == GLFW.GLFW_RELEASE)
                 if (!_focused) {
@@ -252,15 +252,11 @@ public class Window {
             _uniFog = GL33.glGetUniformLocation(_prog.getProgram(), "fogColor");
             _uniTime = GL33.glGetUniformLocation(_prog.getProgram(), "time");
             _uniGamma = GL33.glGetUniformLocation(_prog.getProgram(), "gamma");
-            _world = new World();
 
             GuiRenderer.updateWindowSize(_wWidth, _wHeight);
 
-            PlaneRenderer.setColors(_world.worldType);
 
-            _loadScreen = new GuiLoadingScreen(DensityGenerator.act_gen, DensityGenerator.act_form);
-
-            GuiRenderer.attachScreen(_loadScreen);
+            GuiRenderer.attachScreen(new GuiSplashScreen());
         } catch (Exception e) {
             throw e;
         }
@@ -273,141 +269,174 @@ public class Window {
         _camera.resetMouse();
     }
 
-    private void update() {
-        if(_initialGenerationDone) {
-            _timer += 0.01f;
-
-            double currentFrame = GLFW.glfwGetTime();
-            double delta = currentFrame - _lastFrame;
-            _lastFrame = currentFrame;
-
-            if (_focused) {
-                _camera.updatePosition(delta, keyStates);
-            }
-
-            if(!_focused && !GuiRenderer.screenAttached()) {
-                GuiRenderer.attachScreen(new GuiPauseScreen());
-                GLFW.glfwSetInputMode(_window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_NORMAL);
-            }
-
-            if(refocusRequested) {
-                if(!_focused) {
+    private void transitionState(GameState state) {
+        _state = state;
+        switch(state) {
+            case SPLASH:
+                return;
+            case LOADING:
+                _world = new World();
+                PlaneRenderer.setColors(_world.worldType);
+                atmocolor = _world.worldType.atmoColor;
+                GuiRenderer.attachScreen(new GuiLoadingScreen(DensityGenerator.act_gen, DensityGenerator.act_form));
+                break;
+            case INGAME:
+                GuiRenderer.clearScreen();
+                if(_focused) {
                     refocusWindow();
+                } else {
+                    GuiRenderer.attachScreen(new GuiPauseScreen());
+                    GLFW.glfwSetInputMode(_window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_NORMAL);
                 }
-                refocusRequested = false;
-            }
+                break;
+        }
+    }
 
-            if (Duration.between(_lastTick, Instant.now()).toMillis() >= 50) {
-                _world.tick();
-                _lastTick = Instant.now();
-                _ticks++;
-            }
+    private void update() {
+        switch(_state) {
+            case SPLASH:
+                _timer += 1f;
+                if(_timer == 120f) {
+                    _timer = 0.0f;
+                    transitionState(GameState.LOADING);
+                }
+                break;
+            case LOADING:
+                if(GeneratorPool.queueSize() == 0 && RenderPool.queueSize() == 0) {
+                    transitionState(GameState.INGAME);
+                }
+                break;
+            case INGAME:
+                _timer += 0.01f;
+
+                double currentFrame = GLFW.glfwGetTime();
+                double delta = currentFrame - _lastFrame;
+                _lastFrame = currentFrame;
+
+                if (_focused) {
+                    _camera.updatePosition(delta, keyStates);
+                }
+
+                if(!_focused && !GuiRenderer.screenAttached()) {
+                    GuiRenderer.attachScreen(new GuiPauseScreen());
+                    GLFW.glfwSetInputMode(_window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_NORMAL);
+                }
+
+                if(refocusRequested) {
+                    if(!_focused) {
+                        refocusWindow();
+                    }
+                    refocusRequested = false;
+                }
+
+                if (Duration.between(_lastTick, Instant.now()).toMillis() >= 50) {
+                    _world.tick();
+                    _lastTick = Instant.now();
+                    _ticks++;
+                }
+                break;
         }
 
         BindChunkQueue.bindChunks(_prog);
     }
 
     public void renderWorld() {
-        if(_initialGenerationDone) {
-            if (!_texUse) {
-                _tex2.use();
-            } else {
-                _tex.use();
-            }
+        switch(_state) {
+            case INGAME:
+                if (!_texUse) {
+                    _tex2.use();
+                } else {
+                    _tex.use();
+                }
 
-            GL33.glBlendFunc(GL33.GL_SRC_ALPHA, GL33.GL_ONE_MINUS_SRC_ALPHA);
+                GL33.glBlendFunc(GL33.GL_SRC_ALPHA, GL33.GL_ONE_MINUS_SRC_ALPHA);
 
-            _viewproj = _camera.generateViewProj(_renderDistance);
+                _viewproj = _camera.generateViewProj(_renderDistance);
 
-            PlaneRenderer.draw(_viewproj.view, _viewproj.proj, _camera.getPos(), _camera.getPitch(), _camera.getYaw());
+                PlaneRenderer.draw(_viewproj.view, _viewproj.proj, _camera.getPos(), _camera.getPitch(), _camera.getYaw());
 
-            _prog.use();
+                _prog.use();
 
-            try {
-                _stack = MemoryStack.stackPush();
-                GL33.glUniformMatrix4fv(_uniView, false, _viewproj.view.get(_stack.mallocFloat(16)));
-                GL33.glUniformMatrix4fv(_uniProj, false, _viewproj.proj.get(_stack.mallocFloat(16)));
-                GL33.glUniform3fv(_uniFog, atmocolor.get(_stack.mallocFloat(3)));
-                GL33.glUniform1f(_uniTime, _timer);
-                GL33.glUniform1f(_uniGamma, _gamma);
-            } finally {
-                _stack.pop();
-            }
+                try {
+                    _stack = MemoryStack.stackPush();
+                    GL33.glUniformMatrix4fv(_uniView, false, _viewproj.view.get(_stack.mallocFloat(16)));
+                    GL33.glUniformMatrix4fv(_uniProj, false, _viewproj.proj.get(_stack.mallocFloat(16)));
+                    GL33.glUniform3fv(_uniFog, atmocolor.get(_stack.mallocFloat(3)));
+                    GL33.glUniform1f(_uniTime, _timer);
+                    GL33.glUniform1f(_uniGamma, _gamma);
+                } finally {
+                    _stack.pop();
+                }
 
-            _world.draw(_uniTrans, _timer);
+                _world.draw(_uniTrans, _timer);
+                break;
+            default:
+                break;
         }
     }
 
     public void renderGui(Runtime runtime) {
-        if(_initialGenerationDone) {
-            GL33.glDisable(GL33.GL_DEPTH_TEST);
+        GL33.glBlendFunc(GL33.GL_SRC_ALPHA, GL33.GL_ONE_MINUS_SRC_ALPHA);
+        GL33.glDisable(GL33.GL_DEPTH_TEST);
 
-            GuiRenderer.renderCrosshair(_guiMat);
+        switch(_state) {
+            case SPLASH:
+            case LOADING:
+                _proj = new Matrix4f().ortho(0.0f, _wWidth, _wHeight, 0.0f, -1.0f, 10.0f);
+                FontRenderer.FONT_RENDERER.draw(_proj);
+                GuiRenderer.renderScreen(_proj);
+                FontRenderer.FONT_RENDERER.draw(_proj);
+                break;
+            case INGAME:
+                GuiRenderer.renderCrosshair(_guiMat);
 
-            FontRenderer.FONT_RENDERER.renderTextWithFrame(
-                    4.0f,
-                    2.0f,
-                    "BlockGame pre-070320 (FPS: "+_fps+" / TPS: "+_tps+")",
-                    1.0f
-            );
-            FontRenderer.FONT_RENDERER.renderTextWithFrame(
-                    4.0f,
-                    FontRenderer.FONT_RENDERER.font.getHeight() * 1.0f + 4.0f,
-                    "Position: (X: "+_camera.getPos().x+" / Y: "+_camera.getPos().y+" / Z: "+_camera.getPos().z+") (Chunk: "+((int)_camera.getPos().x >> 4)+", "+((int)_camera.getPos().z >> 4)+")",
-                    1.0f
-            );
-            FontRenderer.FONT_RENDERER.renderTextWithFrame(
-                    4.0f,
-                    FontRenderer.FONT_RENDERER.font.getHeight() * 2.0f + 6.0f,
-                    "G: "+GeneratorPool.queueSize() + " / D: "+ DecoratorPool.queueSize() + " / R: "+ RenderPool.queueSize()+" / B: "+BindChunkQueue.queueSize(),
-                    1.0f
-            );
-            FontRenderer.FONT_RENDERER.renderTextWithFrame(
-                    4.0f,
-                    FontRenderer.FONT_RENDERER.font.getHeight() * 3.0f + 8.0f,
-                    "Memory: "+(runtime.totalMemory() - runtime.freeMemory()) / (1024 * 1024)+"MB/"+runtime.totalMemory() / (1024 * 1024)+"MB",
-                    1.0f
-            );
-            FontRenderer.FONT_RENDERER.renderTextWithFrame(
-                    4.0f,
-                    FontRenderer.FONT_RENDERER.font.getHeight() * 4.0f + 10.0f,
-                    "Seed: "+_world.getSeed(),
-                    1.0f
-            );
-            FontRenderer.FONT_RENDERER.renderTextWithFrame(
-                    4.0f,
-                    FontRenderer.FONT_RENDERER.font.getHeight() * 5.0f + 12.0f,
-                    "Chunks Loaded: "+_world.chunkCount(),
-                    1.0f
-            );
+                FontRenderer.FONT_RENDERER.renderTextWithFrame(
+                        4.0f,
+                        2.0f,
+                        "BlockGame pre-070320 (FPS: "+_fps+" / TPS: "+_tps+")",
+                        1.0f
+                );
+                FontRenderer.FONT_RENDERER.renderTextWithFrame(
+                        4.0f,
+                        FontRenderer.FONT_RENDERER.font.getHeight() * 1.0f + 4.0f,
+                        "Position: (X: "+_camera.getPos().x+" / Y: "+_camera.getPos().y+" / Z: "+_camera.getPos().z+") (Chunk: "+((int)_camera.getPos().x >> 4)+", "+((int)_camera.getPos().z >> 4)+")",
+                        1.0f
+                );
+                FontRenderer.FONT_RENDERER.renderTextWithFrame(
+                        4.0f,
+                        FontRenderer.FONT_RENDERER.font.getHeight() * 2.0f + 6.0f,
+                        "G: "+GeneratorPool.queueSize() + " / D: "+ DecoratorPool.queueSize() + " / R: "+ RenderPool.queueSize()+" / B: "+BindChunkQueue.queueSize(),
+                        1.0f
+                );
+                FontRenderer.FONT_RENDERER.renderTextWithFrame(
+                        4.0f,
+                        FontRenderer.FONT_RENDERER.font.getHeight() * 3.0f + 8.0f,
+                        "Memory: "+(runtime.totalMemory() - runtime.freeMemory()) / (1024 * 1024)+"MB/"+runtime.totalMemory() / (1024 * 1024)+"MB",
+                        1.0f
+                );
+                FontRenderer.FONT_RENDERER.renderTextWithFrame(
+                        4.0f,
+                        FontRenderer.FONT_RENDERER.font.getHeight() * 4.0f + 10.0f,
+                        "Seed: "+_world.getSeed(),
+                        1.0f
+                );
+                FontRenderer.FONT_RENDERER.renderTextWithFrame(
+                        4.0f,
+                        FontRenderer.FONT_RENDERER.font.getHeight() * 5.0f + 12.0f,
+                        "Chunks Loaded: "+_world.chunkCount(),
+                        1.0f
+                );
 
-            FontRenderer.FONT_RENDERER.draw(_guiMat);
+                FontRenderer.FONT_RENDERER.draw(_guiMat);
 
-            if (!_focused) {
-                GuiRenderer.renderScreen(_guiMat);
-            }
+                if (!_focused) {
+                    GuiRenderer.renderScreen(_guiMat);
+                }
 
-            FontRenderer.FONT_RENDERER.draw(_guiMat);
-
-            GL33.glEnable(GL33.GL_DEPTH_TEST);
-        } else {
-            GL33.glBlendFunc(GL33.GL_SRC_ALPHA, GL33.GL_ONE_MINUS_SRC_ALPHA);
-            GL33.glDisable(GL33.GL_DEPTH_TEST);
-
-            _proj = new Matrix4f().ortho(0.0f, _wWidth, _wHeight, 0.0f, -1.0f, 10.0f);
-
-            FontRenderer.FONT_RENDERER.draw(_proj);
-
-            GuiRenderer.renderScreen(_proj);
-
-            FontRenderer.FONT_RENDERER.draw(_proj);
-
-            if(GeneratorPool.queueSize() == 0 && RenderPool.queueSize() == 0) {
-                GLFW.glfwSetInputMode(_window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
-                GuiRenderer.clearScreen();
-                _initialGenerationDone = true;
-            }
+                FontRenderer.FONT_RENDERER.draw(_guiMat);
+                break;
         }
+        GL33.glEnable(GL33.GL_DEPTH_TEST);
     }
 
     public void updateFps() {
@@ -427,8 +456,6 @@ public class Window {
         if(_lastFs == Instant.EPOCH) {
             _lastFs = Instant.now();
         }
-
-        atmocolor = _world.worldType.atmoColor;
 
         while (!GLFW.glfwWindowShouldClose(_window)) {
             GL33.glClearColor(atmocolor.x, atmocolor.y, atmocolor.z, 1.0f);
