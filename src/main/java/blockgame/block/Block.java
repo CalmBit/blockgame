@@ -36,9 +36,8 @@ public class Block implements IRegistryEntry {
     }
 
     public boolean shouldRenderFace(World world, int cX, int cZ, int rY, int x, int y, int z, EnumDirection face) {
-        int[] adj = face.getCovering(world.adjustChunk(cX, x),y+(16*rY),world.adjustChunk(cZ, z));
-        TileState other = world.getTileAt(adj[0], adj[1], adj[2]);
-        if (face == EnumDirection.UP && y+(16*rY) == 127)
+        TileState other = world.getTileAt(face.getX(world.adjustChunk(cX, x)), face.getY(y + (16 * rY)), face.getZ(world.adjustChunk(cZ, z)));
+        if (face == EnumDirection.UP && y + (16 * rY) == 127)
             return true;
         if (other != null) {
             return !other.shouldRender() || (!other.isOpaque() && this.isOpaque());
