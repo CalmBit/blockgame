@@ -43,6 +43,9 @@ public class GuiRenderer {
 
     public static boolean hasInitialized;
 
+    private static final Matrix4f OVERLAY_MAT = new Matrix4f()
+            .ortho(0.0f, 1.0f, 1.0f, 0.0f, -1.0f, 10.0f);
+
     private static final float[] doverlay = new float[] {
         0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.5f,
         0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.5f,
@@ -186,7 +189,7 @@ public class GuiRenderer {
         GL33.glBlendFunc(GL33.GL_SRC_ALPHA, GL33.GL_ONE_MINUS_SRC_ALPHA);
     }
 
-    public static void renderDoverlay(Matrix4f proj) {
+    public static void renderFadeBack() {
         doverlayShader.use();
         GL33.glDisable(GL33.GL_TEXTURE);
         GL33.glBindVertexArray(dvao);
@@ -195,7 +198,7 @@ public class GuiRenderer {
         _stack = null;
         try {
             _stack = MemoryStack.stackPush();
-            GL33.glUniformMatrix4fv(doverlayProj, false, proj.get(_stack.mallocFloat(16)));
+            GL33.glUniformMatrix4fv(doverlayProj, false, OVERLAY_MAT.get(_stack.mallocFloat(16)));
         } finally {
             _stack.pop();
         }
@@ -223,5 +226,9 @@ public class GuiRenderer {
 
     public static float getScreenHeight() {
         return _wHeight;
+    }
+
+    public static boolean screenAttached() {
+        return _screen != null;
     }
 }

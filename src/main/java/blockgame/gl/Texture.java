@@ -1,5 +1,7 @@
 package blockgame.gl;
 
+import blockgame.registry.IRegistryEntry;
+import blockgame.registry.RegistryName;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL33;
 import org.lwjgl.stb.STBImage;
@@ -11,12 +13,14 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 
-public class Texture {
+public class Texture implements IRegistryEntry {
     private final int _tex;
     private final int _width;
     private final int _height;
+    private RegistryName _name;
 
-    public Texture(File file) throws IOException {
+    public Texture(RegistryName name, File file) throws IOException {
+        _name = name;
         _tex = GL33.glGenTextures();
         GL33.glBindTexture(GL33.GL_TEXTURE_2D, _tex);
         GL33.glTexParameteri(GL33.GL_TEXTURE_2D, GL33.GL_TEXTURE_WRAP_S, GL33.GL_REPEAT);
@@ -65,5 +69,15 @@ public class Texture {
 
     public void use() {
         GL33.glBindTexture(GL33.GL_TEXTURE_2D, _tex);
+    }
+
+    @Override
+    public void setRegistryName(RegistryName name) {
+        _name = name;
+    }
+
+    @Override
+    public RegistryName getRegistryName() {
+        return _name;
     }
 }

@@ -1,40 +1,31 @@
 package blockgame.render;
 
 import blockgame.gl.Texture;
+import blockgame.gl.TextureManager;
+import blockgame.registry.RegistryName;
 import blockgame.util.FloatList;
 import org.joml.Matrix4f;
-import org.joml.Rectangled;
 import org.joml.Vector2f;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL33;
-import org.lwjgl.stb.STBImage;
 import org.lwjgl.system.MemoryStack;
 import org.spongepowered.noise.module.Module;
-import org.spongepowered.noise.module.source.Perlin;
 
-import java.io.File;
-import java.io.IOException;
 import java.nio.ByteBuffer;
 
-public class GuiNoiseVisualizer extends GuiBase {
+public class GuiNoiseVisualizer extends GuiWidget {
 
     private int _tex = 0;
-    private Vector2f _pos;
-    private Vector2f _size;
-    private Rectangled _bounds;
-    private FloatList _verts = new FloatList();
-    private FloatList _frame = new FloatList();
+    private FloatList _verts;
+    private FloatList _frame;
     private MemoryStack _stack = null;
 
     public static Texture frame;
 
     public GuiNoiseVisualizer(Vector2f pos, Module perlin) {
+        super(pos, new Vector2f(136.0f, 136.0f));
         if(frame == null) {
-            try {
-                frame = new Texture(new File("texture", "noise_frame.png"));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            frame = TextureManager.getTexture(new RegistryName("blockgame", "noise_frame"));
         }
         _tex = GL33.glGenTextures();
         GL33.glBindTexture(GL33.GL_TEXTURE_2D, _tex);
@@ -43,16 +34,10 @@ public class GuiNoiseVisualizer extends GuiBase {
         GL33.glTexParameteri(GL33.GL_TEXTURE_2D, GL33.GL_TEXTURE_MIN_FILTER, GL33.GL_NEAREST);
         GL33.glTexParameteri(GL33.GL_TEXTURE_2D, GL33.GL_TEXTURE_MAG_FILTER, GL33.GL_NEAREST);
 
-        _pos = pos;
-        _size = new Vector2f(512.0f, 512.0f);
-        _bounds = new Rectangled(pos.x, pos.y, pos.x + (_size.x / 4.0f), pos.y + (_size.y / 4.0f));
+        ByteBuffer img = BufferUtils.createByteBuffer((int)(((size.x - 8.0f) * 4) * ((size.y - 8.0f) * 4) * 4));
 
-        precacheVerts();
-
-        ByteBuffer img = BufferUtils.createByteBuffer((int)(_size.x * _size.y * 4));
-
-        for(int x = 0;x < _size.x;x++) {
-            for(int y = 0;y < _size.y;y++) {
+        for(int x = 0;x < (size.x - 8)*4;x++) {
+            for(int y = 0;y < (size.y - 8)*4;y++) {
                 double value = Double.max(0.0, Double.min(1.0, perlin.getValue(x / 16.0f, 0.0, y / 16.0f)));
                 img.put((byte)(255 * value));
                 img.put((byte)(255 * value));
@@ -63,7 +48,7 @@ public class GuiNoiseVisualizer extends GuiBase {
 
         img.position(0);
 
-        GL33.glTexImage2D(GL33.GL_TEXTURE_2D, 0, GL33.GL_RGBA, (int)_size.x, (int)_size.y, 0, GL33.GL_RGBA, GL33.GL_UNSIGNED_BYTE, img);
+        GL33.glTexImage2D(GL33.GL_TEXTURE_2D, 0, GL33.GL_RGBA, (int)(size.x-8)*4, (int)(size.y-8)*4, 0, GL33.GL_RGBA, GL33.GL_UNSIGNED_BYTE, img);
         GL33.glBindTexture(GL33.GL_TEXTURE_2D, 0);
     }
 
@@ -95,6 +80,7 @@ public class GuiNoiseVisualizer extends GuiBase {
         GL33.glBufferData(GL33.GL_ARRAY_BUFFER, _frame.getStore(), GL33.GL_DYNAMIC_DRAW);
         GL33.glDrawArrays(GL33.GL_TRIANGLES, 0, 6);
 
+        //
 
         GL33.glBindTexture(GL33.GL_TEXTURE_2D, _tex);
 
@@ -102,97 +88,110 @@ public class GuiNoiseVisualizer extends GuiBase {
         GL33.glDrawArrays(GL33.GL_TRIANGLES, 0, 6);
     }
 
-    public void precacheVerts() {
-        _frame.append((float) _bounds.minX - 4);
-        _frame.append((float) _bounds.minY - 4);
+    @Override
+    public void recalculateBounds() {
+        super.recalculateBounds();
+
+        if(_frame == null) {
+            _frame = new FloatList(7*6);
+        } else {
+            _frame.clear();
+        }
+        _frame.append((float) bounds.minX);
+        _frame.append((float) bounds.minY);
         _frame.append(1.0f);
         _frame.append(1.0f);
         _frame.append(1.0f);
         _frame.append(0.0f);
         _frame.append(0.0f);
 
-        _frame.append((float) _bounds.minX - 4);
-        _frame.append((float) _bounds.maxY + 4);
+        _frame.append((float) bounds.minX);
+        _frame.append((float) bounds.maxY);
         _frame.append(1.0f);
         _frame.append(1.0f);
         _frame.append(1.0f);
         _frame.append(0.0f);
         _frame.append(1.0f);
 
-        _frame.append((float) _bounds.maxX + 4);
-        _frame.append((float) _bounds.maxY + 4);
+        _frame.append((float) bounds.maxX);
+        _frame.append((float) bounds.maxY);
         _frame.append(1.0f);
         _frame.append(1.0f);
         _frame.append(1.0f);
         _frame.append(1.0f);
         _frame.append(1.0f);
 
-        _frame.append((float) _bounds.maxX + 4);
-        _frame.append((float) _bounds.maxY + 4);
+        _frame.append((float) bounds.maxX);
+        _frame.append((float) bounds.maxY);
         _frame.append(1.0f);
         _frame.append(1.0f);
         _frame.append(1.0f);
         _frame.append(1.0f);
         _frame.append(1.0f);
 
-        _frame.append((float) _bounds.maxX + 4);
-        _frame.append((float) _bounds.minY - 4);
+        _frame.append((float) bounds.maxX);
+        _frame.append((float) bounds.minY);
         _frame.append(1.0f);
         _frame.append(1.0f);
         _frame.append(1.0f);
         _frame.append(1.0f);
         _frame.append(0.0f);
 
-        _frame.append((float) _bounds.minX - 4);
-        _frame.append((float) _bounds.minY - 4);
+        _frame.append((float) bounds.minX);
+        _frame.append((float) bounds.minY);
         _frame.append(1.0f);
         _frame.append(1.0f);
         _frame.append(1.0f);
         _frame.append(0.0f);
         _frame.append(0.0f);
 
-        _verts.append((float) _bounds.minX);
-        _verts.append((float) _bounds.minY);
+        if(_verts == null) {
+            _verts = new FloatList(7*6);
+        } else {
+            _verts.clear();
+        }
+        _verts.append((float) bounds.minX + 4.0f);
+        _verts.append((float) bounds.minY + 4.0f);
         _verts.append(1.0f);
         _verts.append(1.0f);
         _verts.append(1.0f);
         _verts.append(0.0f);
         _verts.append(0.0f);
 
-        _verts.append((float) _bounds.minX);
-        _verts.append((float) _bounds.maxY);
+        _verts.append((float) bounds.minX + 4.0f);
+        _verts.append((float) bounds.maxY - 4.0f);
         _verts.append(1.0f);
         _verts.append(1.0f);
         _verts.append(1.0f);
         _verts.append(0.0f);
         _verts.append(1.0f);
 
-        _verts.append((float) _bounds.maxX);
-        _verts.append((float) _bounds.maxY);
+        _verts.append((float) bounds.maxX - 4.0f);
+        _verts.append((float) bounds.maxY - 4.0f);
         _verts.append(1.0f);
         _verts.append(1.0f);
         _verts.append(1.0f);
         _verts.append(1.0f);
         _verts.append(1.0f);
 
-        _verts.append((float) _bounds.maxX);
-        _verts.append((float) _bounds.maxY);
+        _verts.append((float) bounds.maxX - 4.0f);
+        _verts.append((float) bounds.maxY - 4.0f);
         _verts.append(1.0f);
         _verts.append(1.0f);
         _verts.append(1.0f);
         _verts.append(1.0f);
         _verts.append(1.0f);
 
-        _verts.append((float) _bounds.maxX);
-        _verts.append((float) _bounds.minY);
+        _verts.append((float) bounds.maxX - 4.0f);
+        _verts.append((float) bounds.minY + 4.0f);
         _verts.append(1.0f);
         _verts.append(1.0f);
         _verts.append(1.0f);
         _verts.append(1.0f);
         _verts.append(0.0f);
 
-        _verts.append((float) _bounds.minX);
-        _verts.append((float) _bounds.minY);
+        _verts.append((float) bounds.minX + 4.0f);
+        _verts.append((float) bounds.minY + 4.0f);
         _verts.append(1.0f);
         _verts.append(1.0f);
         _verts.append(1.0f);

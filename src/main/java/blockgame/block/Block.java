@@ -4,6 +4,7 @@ import blockgame.gl.UVPair;
 import blockgame.registry.IRegistryEntry;
 import blockgame.registry.RegistryName;
 import blockgame.world.World;
+import org.joml.Vector3f;
 
 public class Block implements IRegistryEntry {
     private RegistryName _name;
@@ -63,6 +64,14 @@ public class Block implements IRegistryEntry {
 
     public float getEmittance() {
         return 0.0f;
+    }
+
+    public boolean impartsTint() {
+        return false;
+    }
+
+    public Vector3f getTint(int cX, int cZ, int x, int y, int z) {
+        return null;
     }
 
     public void tick(World world, int rX, int rY, int rZ, int x, int y, int z) {

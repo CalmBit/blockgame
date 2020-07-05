@@ -1,6 +1,7 @@
 package blockgame.block;
 
 import blockgame.gl.UVPair;
+import org.joml.Vector3f;
 
 public class TileState {
     public final Block block;
@@ -26,6 +27,10 @@ public class TileState {
 
     public float getEmittance() {
         return block.getEmittance();
+    }
+
+    public Vector3f getTint(int cX, int cZ, int x, int y, int z) {
+        return block.getTint(cX, cZ, x, y, z);
     }
 
     @Override

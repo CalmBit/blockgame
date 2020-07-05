@@ -4,9 +4,19 @@ import blockgame.Logger;
 
 import java.util.concurrent.locks.ReentrantLock;
 
+/**
+ * We need a system to reserve FloatLists for the rendering and bind pools, without continually
+ * eating memory by tossing away thousands of objects. FloatList cache allows us to selectively reserve and
+ * free a set of pre-allocated FloatLists that can be "possessed" indefinitely.
+ */
 public class FloatListCache {
 
     public static class Entry {
+        /**
+         * When free is true, FloatListCache will be free to "reserve" this entry and mark it
+         * as being in use. When false, it's known to be reserved, and the state should only be
+         * modified by the owning thread.
+         */
         private boolean free = true;
         private FloatList list = new FloatList();
 
@@ -59,6 +69,9 @@ public class FloatListCache {
                 return l;
             }
         }
+        // If we've found no free entries, and we have no more to reserve, we'll have to
+        // allocate more. In order to avoid doing this a lot under load, we'll allocate
+        // twice the amount we currently have.
         if(_len >= _capacity) {
             Entry[] newCache = new Entry[_capacity * 2];
             _capacity *= 2;

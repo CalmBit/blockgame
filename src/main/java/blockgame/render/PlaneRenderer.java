@@ -16,7 +16,7 @@ import java.io.IOException;
 public class PlaneRenderer {
     private static int _vao;
     private static int _vbo;
-    private static FloatList _verts = new FloatList();
+    private static FloatList _verts = new FloatList(32);
     private static int _quads;
 
     private static final float SIZE = 64.0f;

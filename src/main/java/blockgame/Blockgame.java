@@ -1,5 +1,7 @@
 package blockgame;
 
+import org.apache.logging.log4j.Level;
+
 public class Blockgame {
     public static void main(String[] args) {
         try {
@@ -7,11 +9,8 @@ public class Blockgame {
             w.run();
         } catch (Exception e) {
             Logger.LOG.fatal("Caught exception - " + e.getClass().getName());
-            StringBuilder build = new StringBuilder();
-            for(StackTraceElement el : e.getStackTrace()) {
-                build.append(el.toString()).append("\n");
-            }
-            Logger.LOG.fatal(build.toString());
+            Logger.LOG.fatal("Message: " + e.getMessage());
+            Logger.logStackTrace(Level.FATAL, e);
         }
     }
 }

@@ -94,6 +94,7 @@ public class Chunk {
     public void bindRenderData(List<FloatListCache.Entry> verts, EnumRenderLayer l, ShaderProgram prog) {
         for(int i = 0;i < _regions.length;i++) {
             _regions[i].bindData(verts.get(i), l, prog);
+            verts.get(i).free();
         }
     }
 

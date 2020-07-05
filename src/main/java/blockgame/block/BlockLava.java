@@ -14,6 +14,6 @@ public class BlockLava extends Block {
 
     @Override
     public float getEmittance() {
-        return 1.0f;
+        return 0.0f;
     }
 }

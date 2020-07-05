@@ -41,7 +41,6 @@ public class BindChunkQueue {
 
     private static void bind(ShaderProgram program, BindChunkQueueTask currentTask) {
         currentTask.chunk.bindRenderData(currentTask.verts, currentTask.layer, program);
-        currentTask.verts.forEach((entry -> entry.free()));
     }
 
     public static void bindChunks(ShaderProgram program) {

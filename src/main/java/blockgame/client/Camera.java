@@ -1,5 +1,6 @@
 package blockgame.client;
 
+import blockgame.render.GuiRenderer;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
@@ -23,6 +24,11 @@ public class Camera {
     public CameraMode mode = CameraMode.FIRST;
 
     public static int fov = 70;
+
+    public void resetMouse() {
+        mlastX = GuiRenderer.getScreenWidth() / 2.0;
+        mlastY = GuiRenderer.getScreenHeight() / 2.0;
+    }
 
     public void updateCameraRotation(double x, double y) {
         double xOffset = x - mlastX;

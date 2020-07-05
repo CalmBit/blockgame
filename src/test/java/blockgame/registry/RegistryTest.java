@@ -1,6 +1,7 @@
 package blockgame.registry;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 public class RegistryTest {
@@ -41,17 +42,20 @@ public class RegistryTest {
 
     //region Registry.register()
     @Test
+    @DisplayName("Registry is empty on initialization")
     void registryEmptyOnInit() {
         Assertions.assertEquals(0, registry.size());
     }
 
     @Test
+    @DisplayName("Registering a single item increments size")
     void registerSingleItem() throws DuplicateKeyException {
         registry.register(new TRegistryEntry(new RegistryName("test", "testing")));
         Assertions.assertEquals(1, registry.size());
     }
 
     @Test
+    @DisplayName("Registering a multiple items in same namespace works correctly")
     void registerMultipleSameNamespace() throws DuplicateKeyException {
         registry.register(new TRegistryEntry(new RegistryName("test", "testing")));
         registry.register(new TRegistryEntry(new RegistryName("test", "testing2")));
@@ -59,6 +63,7 @@ public class RegistryTest {
     }
 
     @Test
+    @DisplayName("Registering a multiple items in different namespaces works correctly")
     void registerMultipleDifferentNamespace() throws DuplicateKeyException {
         registry.register(new TRegistryEntry(new RegistryName("test", "testing")));
         registry.register(new TRegistryEntry(new RegistryName("test2", "testing")));
@@ -66,6 +71,7 @@ public class RegistryTest {
     }
 
     @Test
+    @DisplayName("Registering a duplicate throws an exception")
     void registerDuplicateThrowsException() throws DuplicateKeyException {
         registry.register(new TRegistryEntry(new RegistryName("test", "testing")));
         Assertions.assertThrows(DuplicateKeyException.class, () -> registry.register(new TRegistryEntry(new RegistryName("test", "testing"))));
@@ -74,6 +80,7 @@ public class RegistryTest {
 
     //region Registry.get()
     @Test
+    @DisplayName("Registering and retrieving a single value works correctly")
     void getSingleValue() throws DuplicateKeyException {
         RegistryName name = new RegistryName("test", "testing");
         TRegistryEntry test = new TRegistryEntry(name);
@@ -82,6 +89,7 @@ public class RegistryTest {
     }
 
     @Test
+    @DisplayName("Registering and retrieving multiple values in the same namespace works correctly")
     void getMultipleSameNamespace() throws DuplicateKeyException {
         RegistryName name = new RegistryName("test", "testing");
         RegistryName name2 = new RegistryName("test", "testing2");
@@ -94,6 +102,7 @@ public class RegistryTest {
     }
 
     @Test
+    @DisplayName("Registering and retrieving multiple values in different namespaces works correctly")
     void getMultipleDifferentNamespace() throws DuplicateKeyException {
         RegistryName name = new RegistryName("test", "testing");
         RegistryName name2 = new RegistryName("test2", "testing");
@@ -106,6 +115,7 @@ public class RegistryTest {
     }
 
     @Test
+    @DisplayName("Retrieving a non-existant value returns nul")
     void gettingNullReturnsNull() throws DuplicateKeyException {
         RegistryName name = new RegistryName("test", "testing");
         RegistryName invalid = new RegistryName("test2", "testing");

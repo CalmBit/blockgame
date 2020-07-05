@@ -4,6 +4,8 @@ import blockgame.gl.UVPair;
 import blockgame.registry.DuplicateKeyException;
 import blockgame.registry.Registry;
 import blockgame.registry.RegistryName;
+import org.joml.Vector2f;
+import org.joml.Vector3f;
 
 public class BlockRegistry {
     private static final Registry<Block> _REGISTRY = new Registry<>();
@@ -33,7 +35,7 @@ public class BlockRegistry {
     public static final Block MONSTER_SPAWNER = register(new BlockMonsterSpawner().setUV(new UVPair(10, 1)));
 
     public static final Block BIRCH_LOG = register(new BlockLog(LogType.BIRCH));
-    public static final Block BIRCH_LEAVES = register(new BlockLeaves(LogType.BIRCH));
+    public static final Block BIRCH_LEAVES = register(new BlockLeaves(LogType.BIRCH).setTint(new Vector3f(0.55f, 0.81f, 0.49f)));
     public static final Block BASALT = register(new Block(new RegistryName("blockgame", "basalt")).setUV(new UVPair(4, 2)));
 
     public static final Block UVTEST = register(new Block(new RegistryName("blockgame", "uvtest")).setUV(new UVPair(14, 15)));
